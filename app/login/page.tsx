@@ -2,7 +2,7 @@ import React from 'react'
 
 const login = () => {
   return (
-    <div>
+    <div className='bg-radial bg-bottom from-blue-800 to-black h-[86vh]'>
       <form action="" className='w-1/2 mt-20 flex flex-col gap-4 mx-auto p-10'>
         <h1 className='text-4xl font-bold text-center'>Login</h1>
         {/* <img className='mx-auto' src="/lock.png" alt="login" width={250} height={250} /> */}

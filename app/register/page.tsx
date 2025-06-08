@@ -3,7 +3,7 @@ import React from 'react'
 
 const register = () => {
   return (
-    <div>
+    <div className='bg-radial bg-bottom from-blue-800 to-black h-[86vh]'>
       <form action="" className='w-1/2 my-10 flex flex-col gap-4 mx-auto p-10'>
         <h1 className='text-4xl font-bold text-center'>Register</h1>
         
