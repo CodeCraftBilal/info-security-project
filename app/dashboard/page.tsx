@@ -1,11 +1,11 @@
-import React from 'react'
 
-const dashboard = () => {
+import React from 'react';
+import Dashboard from '@/components/Dashboard';
+const Dshboard = () => {
   return (
     <div>
-      This is our dashboard
+      <Dashboard />
     </div>
   )
-}
-
-export default dashboard
+};
+export default Dshboard;
