@@ -1,6 +1,7 @@
 "use client"
 import React from 'react';
 import { useState, useRef, useEffect } from 'react';
+import { uploadFileAction } from '@/Action/uploadFileAction';
 
 const Dashboard = () => {
 
@@ -123,8 +124,11 @@ const Dashboard = () => {
   const [filteredFiles, setFilteredFiles] = useState<FileType[]>(files)
   const [subMenu, setSubMenu] = useState<boolean>(false);
   const [openMenuId, setOpenMenuId] = useState<null | number>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const menuRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
+  // search feature
   const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const searchTerm = e.target.value.toLowerCase();
     setSearch(e.target.value);
@@ -140,7 +144,7 @@ const Dashboard = () => {
       setFilteredFiles(filtered);
     }
   }
-
+  // menu disappear feature
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -160,6 +164,28 @@ const Dashboard = () => {
     };
   }, []);
 
+  // upload file feature
+
+  const handleUploadClick = (): void => {
+    fileInputRef.current?.click();
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const filestoUpload = e.target.files;
+
+    if (!filestoUpload) return
+    // Array.from(filestoUpload).forEach(file => {
+      uploadFile(filestoUpload);
+    // })
+  }
+
+  const uploadFile = (filestoUpload: FileList): void => {
+    const formData = new FormData();
+    Array.from(filestoUpload).forEach(file => {
+      formData.append('files', file);
+    })
+    uploadFileAction(formData);
+  }
   return (
     <div className="bg-[#0b1338] h-screen p-2 flex flex-col">
       {/* Fixed: Corrected height class */}
@@ -170,7 +196,9 @@ const Dashboard = () => {
         </div>
 
         <div className="actionbtns flex gap-3">
-          <button id='uploadBtn' className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Upload File</button>
+          <input type="file" name='fileupload' className='hidden' ref={fileInputRef} onChange={handleFileChange}
+            accept='.pdf, .doc, .docx, .jpg, .png, .mp4' multiple />
+          <button onClick={handleUploadClick} className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Upload File</button>
           <button className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Encrypt & File</button>
           <button className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Share File</button>
         </div>
@@ -196,7 +224,7 @@ const Dashboard = () => {
 
           {/* Collaborator section with working scroll */}
           <div className="collaborator flex flex-col gap-2 overflow-auto p-2 h-0 flex-grow justify-end">
-            {Array(2).fill(0).map((_, i) => (
+            {Array(1).fill(0).map((_, i) => (
               <div key={i} className="container bg-[#26305aec] flex items-center p-3 rounded-2xl text-lg text-white">
                 <div className="image mr-3">
                   <img src="colImg.gif" alt="collaborator" width={60} height={60} />
@@ -207,17 +235,28 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
+
+            {/* Account holder or owner */}
+            <div className="container bg-[#26305aec] flex items-center p-3 rounded-2xl text-lg text-white">
+              <div className="image mr-3">
+                <img src="colImg.gif" alt="collaborator" width={60} height={60} />
+              </div>
+              <div className="description flex flex-col">
+                <span>Collab Name</span>
+                <span>Role</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Right Section */}
-        <div className="right flex flex-col justify-center items-center gap-2 bg-blue-200 w-[70%] h-full rounded-2xl px-2">
+        <div className="right flex flex-col items-center gap-2 bg-blue-200 w-[70%] h-full rounded-2xl px-2">
           <div className="search flex items-center gap-2 rounded-lg mt-4 p-1 bg-blue-300 mx-2 w-[90%]">
             <input onChange={(e) => handleChangeSearch(e)} type="search" className='w-[calc(100%-60px)] py-1 px-2 text-black out text-xl focus:outline-hidden' />
             <button><img className='' src="/search.png" width={35} height={35} alt="search" /></button>
           </div>
-
-          <div className="filescontainer flex flex-wrap gap-3 w-full h-[80%] overflow-auto">
+          {/* flex flex-wrap gap-3 w-full h-[80%] overflow-auto */}
+          <div className="filescontainer flex flex-wrap gap-3 min-h-0 max-h-full overflow-auto">
             {filteredFiles.map((file) => {
               return (
                 <div
