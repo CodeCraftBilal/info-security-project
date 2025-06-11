@@ -2,8 +2,9 @@
 import React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { uploadFileAction } from '@/Action/uploadFileAction';
+import Link from 'next/link';
 
-const Dashboard = () => {
+const Dashboard = (): React.JSX.Element => {
 
   type FileType = {
     id: number,
@@ -120,6 +121,28 @@ const Dashboard = () => {
       uploadedAt: "2025-05-31",
     },
   ];
+
+  type User= {
+    userId: number,
+      userName: string,
+      userRole: string,
+      userProfile: string
+  }
+  const users: User[] = [
+    {
+      userId: 0,
+      userName: 'Bilal Khan',
+      userRole: 'admin',
+      userProfile: 'profile.png'
+    }, 
+    {
+      userId: 1,
+      userName: 'Rashid Khan',
+      userRole: 'Viewer',
+      userProfile: 'profile.png'
+    },
+  ]
+
   const [search, setSearch] = useState<string | null>('')
   const [filteredFiles, setFilteredFiles] = useState<FileType[]>(files)
   const [subMenu, setSubMenu] = useState<boolean>(false);
@@ -175,7 +198,7 @@ const Dashboard = () => {
 
     if (!filestoUpload) return
     // Array.from(filestoUpload).forEach(file => {
-      uploadFile(filestoUpload);
+    uploadFile(filestoUpload);
     // })
   }
 
@@ -190,10 +213,10 @@ const Dashboard = () => {
     <div className="bg-[#0b1338] h-screen p-2 flex flex-col">
       {/* Fixed: Corrected height class */}
       <div className="topbar p-2 flex items-center justify-between h-[60px]">
-        <div className="profile flex gap-2 items-center">
-          <img src="/profile.png" alt="profile" width={50} height={50} />
-          <span className="text-white">User Name</span>
-        </div>
+          <Link className='logo gap-0 flex items-center cursor-pointer' href={'http://localhost:3000/'}>
+            <img className='' src="/logo.png" alt="profile" width={100} height={100} />
+            <span className="text-white font-bold text-2xl ">SecureShare</span>
+          </Link>
 
         <div className="actionbtns flex gap-3">
           <input type="file" name='fileupload' className='hidden' ref={fileInputRef} onChange={handleFileChange}
@@ -224,14 +247,14 @@ const Dashboard = () => {
 
           {/* Collaborator section with working scroll */}
           <div className="collaborator flex flex-col gap-2 overflow-auto p-2 h-0 flex-grow justify-end">
-            {Array(1).fill(0).map((_, i) => (
-              <div key={i} className="container bg-[#26305aec] flex items-center p-3 rounded-2xl text-lg text-white">
+            {users.map((user) => (
+              <div key={user.userId} className="container bg-[#26305aec] flex items-center p-3 rounded-2xl text-lg text-white">
                 <div className="image mr-3">
-                  <img src="colImg.gif" alt="collaborator" width={60} height={60} />
+                  <img src={user.userProfile} alt="collaborator" width={60} height={60} />
                 </div>
                 <div className="description flex flex-col">
-                  <span>Collab Name</span>
-                  <span>Role</span>
+                  <span>{user.userName}</span>
+                  <span>{user.userRole}</span>
                 </div>
               </div>
             ))}
@@ -264,7 +287,7 @@ const Dashboard = () => {
                   ref={(el) => {
                     menuRefs.current[file.id] = el
                   }}
-                  className='relative min-w-[250px] max-h-[76px] flex flex-grow items-center gap-2 text-black bg-white py-2 px-2 rounded-xl max-w-[48%]'
+                  className={`${openMenuId === file.id ? 'border-gray-300 border-2 shadow-xl' : ''} relative min-w-[250px] max-h-[76px] flex flex-grow items-center gap-2 text-black bg-white py-2 px-2 rounded-xl max-w-[48%]`}
                 >
                   <div className="icon rounded-full">
                     <img className='rounded-full' src="/File.jpg" alt="file icon" width={60} height={60} />
