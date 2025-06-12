@@ -3,10 +3,18 @@ import React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { uploadFileAction } from '@/Action/uploadFileAction';
 import Link from 'next/link';
+import { CryptoService, KeyPair, EncryptedFile } from '@/lib/crypto';
+import { blob } from 'stream/consumers';
 
 const Dashboard = (): React.JSX.Element => {
 
-  type FileType = {
+  interface EncryptedFileWithMetaData extends EncryptedFile {
+    fileName: string,
+    fileType: string,
+    encryptedKey: ArrayBuffer
+  }
+
+  type FileMetaData = {
     id: number,
     icon: string,
     name: string,
@@ -15,7 +23,7 @@ const Dashboard = (): React.JSX.Element => {
     uploadedAt: string,
   };
 
-  const files: FileType[] = [
+  const fileMetaData: FileMetaData[] = [
     {
       id: 1,
       icon: "pdf.png",
@@ -122,11 +130,11 @@ const Dashboard = (): React.JSX.Element => {
     },
   ];
 
-  type User= {
+  type User = {
     userId: number,
-      userName: string,
-      userRole: string,
-      userProfile: string
+    userName: string,
+    userRole: string,
+    userProfile: string
   }
   const users: User[] = [
     {
@@ -134,7 +142,7 @@ const Dashboard = (): React.JSX.Element => {
       userName: 'Bilal Khan',
       userRole: 'admin',
       userProfile: 'profile.png'
-    }, 
+    },
     {
       userId: 1,
       userName: 'Rashid Khan',
@@ -143,11 +151,87 @@ const Dashboard = (): React.JSX.Element => {
     },
   ]
 
+  const [keyPair, setKeyPair] = useState<KeyPair | null>(null)
+  const [publicKeyStr, setPublicKeyStr] = useState<string>('')
+  const [encryptedFiles, setencryptedFiles] = useState<EncryptedFileWithMetaData[]>([])
+
+  const genrateKeyPair = async () => {
+    const pair = await CryptoService.generateKeyPair();
+    setKeyPair(pair);
+
+    // export public key to sent to others
+
+    const exported = await window.crypto.subtle.exportKey('spki', pair.publicKey);
+    const exportedAsString = btoa(String.fromCharCode(...new Uint8Array(exported)))
+    setPublicKeyStr(exportedAsString);
+  }
+
+  // encrypting the files
+  const encryptFiles = async (files: File[]) => {
+    if (!keyPair && files?.length === 0) return;
+
+    const result: EncryptedFileWithMetaData[] = [];
+
+    for (const file of files) {
+      try {
+        const aesKey = await CryptoService.generateAesKey();
+        let encryptedAesKey: ArrayBuffer;
+
+        // encrypt the file
+        const encryptedFile = await CryptoService.encryptFile(file, aesKey)
+        if (keyPair)
+          encryptedFile.encryptedKey = await CryptoService.encryptAesKey(aesKey, keyPair?.publicKey);
+        encryptedAesKey = encryptedFile.encryptedKey;
+        result.push({
+          ...encryptedFile,
+          fileName: file.name,
+          fileType: file.type,
+          encryptedKey: encryptedAesKey
+        });
+      }
+      catch (error) {
+        console.log(`error encrypting ${file.name} : `, error);
+      }
+    }
+    setencryptedFiles(result);
+    return result;
+  }
+
+  // decrypting the files
+  const decryptionFiles = async () => {
+    if (!keyPair) return;
+
+    for (const encryptedFile of encryptedFiles) {
+      try {
+
+        // decrypt aes key
+        const aesKey = await CryptoService.decryptAesKey(
+          encryptedFile.encryptedKey,
+          keyPair.privateKey
+        )
+
+        // decrypt the file
+        const decryptData = await CryptoService.decryptFile(encryptedFile, aesKey)
+        const blob = new Blob([decryptData], {type: encryptedFile.fileType})
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `decrypt ${encryptedFile.fileName}`
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      catch (error) {
+        console.log(`error decrypting ${encryptedFile.fileName}`)
+      }
+    }
+  }
+
   const [search, setSearch] = useState<string | null>('')
-  const [filteredFiles, setFilteredFiles] = useState<FileType[]>(files)
+  const [filteredFiles, setFilteredFiles] = useState<FileMetaData[]>(fileMetaData)
   const [subMenu, setSubMenu] = useState<boolean>(false);
   const [openMenuId, setOpenMenuId] = useState<null | number>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filesToBeUploaded, setFilesToBeUploaded] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const menuRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
@@ -157,10 +241,10 @@ const Dashboard = (): React.JSX.Element => {
     setSearch(e.target.value);
     console.log(search)
     if (searchTerm === '') {
-      setFilteredFiles(files)
+      setFilteredFiles(fileMetaData)
     }
     else {
-      const filtered = files.filter(file =>
+      const filtered = fileMetaData.filter(file =>
         file.name.toLowerCase().includes(searchTerm) ||
         file.type.toLowerCase().includes(searchTerm)
       )
@@ -190,33 +274,45 @@ const Dashboard = (): React.JSX.Element => {
   // upload file feature
 
   const handleUploadClick = (): void => {
+    console.log('upload button clicked')
     fileInputRef.current?.click();
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const filestoUpload = e.target.files;
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('upload button clicked and files are selected')
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setFilesToBeUploaded(files);
+      await uploadFiles(files)
+    }
+  };
 
-    if (!filestoUpload) return
-    // Array.from(filestoUpload).forEach(file => {
-    uploadFile(filestoUpload);
-    // })
+
+  const uploadFiles = async (files: File[]): Promise<void> => {
+    const result = await encryptFiles(files);
+    console.log('upload function is in working')
+  const formData = new FormData();
+
+  for (const file of encryptedFiles) {
+    const encryptedBlob = new Blob([file.file], { type: file.fileType });
+
+    formData.append('files', encryptedBlob, file.fileName);
+
+    // Optional: add metadata if needed
+    formData.append('encryptedKey', new Blob([file.encryptedKey]), file.fileName + '.key');
   }
 
-  const uploadFile = (filestoUpload: FileList): void => {
-    const formData = new FormData();
-    Array.from(filestoUpload).forEach(file => {
-      formData.append('files', file);
-    })
-    uploadFileAction(formData);
-  }
+  await uploadFileAction(formData);
+};
+
   return (
     <div className="bg-[#0b1338] h-screen p-2 flex flex-col">
       {/* Fixed: Corrected height class */}
       <div className="topbar p-2 flex items-center justify-between h-[60px]">
-          <Link className='logo gap-0 flex items-center cursor-pointer' href={'http://localhost:3000/'}>
-            <img className='' src="/logo.png" alt="profile" width={100} height={100} />
-            <span className="text-white font-bold text-2xl ">SecureShare</span>
-          </Link>
+        <Link className='logo gap-0 flex items-center cursor-pointer' href={'http://localhost:3000/'}>
+          <img className='' src="/logo.png" alt="profile" width={100} height={100} />
+          <span className="text-white font-bold text-2xl ">SecureShare</span>
+        </Link>
 
         <div className="actionbtns flex gap-3">
           <input type="file" name='fileupload' className='hidden' ref={fileInputRef} onChange={handleFileChange}
