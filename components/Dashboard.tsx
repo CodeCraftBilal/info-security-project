@@ -290,10 +290,11 @@ const Dashboard = (): React.JSX.Element => {
 
   const uploadFiles = async (files: File[]): Promise<void> => {
     const result = await encryptFiles(files);
+    if(!result) return
     console.log('upload function is in working')
   const formData = new FormData();
 
-  for (const file of encryptedFiles) {
+  for (const file of result) {
     const encryptedBlob = new Blob([file.file], { type: file.fileType });
 
     formData.append('files', encryptedBlob, file.fileName);
@@ -302,7 +303,8 @@ const Dashboard = (): React.JSX.Element => {
     formData.append('encryptedKey', new Blob([file.encryptedKey]), file.fileName + '.key');
   }
 
-  await uploadFileAction(formData);
+  const r = await uploadFileAction(formData);
+  console.log(r);
 };
 
   return (
