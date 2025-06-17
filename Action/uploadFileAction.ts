@@ -5,11 +5,9 @@ import { v2 as cloudinary } from "cloudinary";
 export async function uploadFileAction(formData: FormData) {
     const files = formData.getAll('files');
     const keys = formData.getAll('encryptedKey');
-    const ivs = formData.getAll('iv')
+    const ivs = formData.getAll('iv');
 
-    console.log('files are: ', files)
-    console.log('keys are: ', keys)
-    console.log('ivs: ' , ivs)
+    console.log(keys)
 
     cloudinary.config({
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -24,21 +22,29 @@ export async function uploadFileAction(formData: FormData) {
     let uploadedUrls: string[] = [];
 
     try {
-        let i = 0;
-        for (const file of files) {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
             if (file instanceof Blob) {
+                // Process main file
                 const arrayBuffer = await file.arrayBuffer();
-                const buffer = Buffer.from(arrayBuffer); // Convert to Node.js Buffer
-                console.log('Uploading buffer:', buffer.length, buffer.constructor.name);
+                const buffer = Buffer.from(arrayBuffer);
 
-                // Read key and iv as Buffers
-                const keyFile = keys[i] as File;
-                const keyBuffer = Buffer.from(await keyFile.arrayBuffer());
+                // Process key - ensure it's handled as a File/Blob
+                const keyEntry = keys[i];
+                if (!(keyEntry instanceof Blob)) {
+                    throw new Error('Key is not a Blob');
+                }
+                const keyBuffer = Buffer.from(await keyEntry.arrayBuffer());
+                console.log('encrypted aes key length', keyBuffer.length);
 
-                const ivFile = ivs[i] as File;
-                const ivBuffer = Buffer.from(await ivFile.arrayBuffer());
+                // Process IV
+                const ivEntry = ivs[i];
+                if (!(ivEntry instanceof Blob)) {
+                    throw new Error('IV is not a Blob');
+                }
+                const ivBuffer = Buffer.from(await ivEntry.arrayBuffer());
 
-                // start uploading to cloudinary
+                // Upload to Cloudinary
                 const uploadResult: any = await new Promise((resolve, reject) => {
                     const uploadStream = cloudinary.uploader.upload_stream(
                         { folder: 'encryptedFiles', resource_type: 'raw' },
@@ -47,14 +53,14 @@ export async function uploadFileAction(formData: FormData) {
                             resolve(result);
                         }
                     );
-                    uploadStream.end(buffer); // Write buffer to stream
+                    uploadStream.end(buffer);
                 });
 
                 uploadedUrls.push(uploadResult.secure_url);
 
-                // store data in the mongodb
+                // Store in MongoDB
                 const client = await clientPromise;
-                const db = client.db('secureShare')
+                const db = client.db('secureShare');
 
                 await db.collection('files').insertOne({
                     fileName: file.name,
@@ -65,15 +71,11 @@ export async function uploadFileAction(formData: FormData) {
                     iv: ivBuffer.toString('base64'),
                     uploaderId: 'userId',
                     uploadDate: new Date()
-                })
+                });
             }
-            i+=1
         }
-        console.log('urls : ', uploadedUrls)
-
 
         return { message: 'Upload successful', urls: uploadedUrls, error: false };
-
 
     } catch (error) {
         console.error('Upload failed:', error);

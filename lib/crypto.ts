@@ -8,7 +8,7 @@ export interface KeyPair {
 }
 
 export interface EncryptedFile {
-  file: Uint8Array;
+  file: Uint8Array ;
   iv: Uint8Array;
   encryptedKey: ArrayBuffer;
 }

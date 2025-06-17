@@ -21,113 +21,6 @@ const Dashboard = (): React.JSX.Element => {
     uploadedAt: string,
   };
 
-  const fileMetaData: FileMetaData[] = [
-    {
-      id: 1,
-      icon: "pdf.png",
-      name: "Report.pdf",
-      size: "1.2 MB",
-      type: "PDF",
-      uploadedAt: "2025-06-09",
-    },
-    {
-      id: 2,
-      icon: "doc.png",
-      name: "Resume.docx",
-      size: "350 KB",
-      type: "Word Document",
-      uploadedAt: "2025-06-08",
-    },
-    {
-      id: 3,
-      icon: "img.png",
-      name: "Screenshot.png",
-      size: "800 KB",
-      type: "Image",
-      uploadedAt: "2025-06-07",
-    },
-    {
-      id: 4,
-      icon: "video.png",
-      name: "DemoVideo.mp4",
-      size: "25 MB",
-      type: "Video",
-      uploadedAt: "2025-06-06",
-    },
-    {
-      id: 5,
-      icon: "ppt.png",
-      name: "Presentation.pptx",
-      size: "2.5 MB",
-      type: "PowerPoint",
-      uploadedAt: "2025-06-05",
-    },
-    {
-      id: 6,
-      icon: "zip.png",
-      name: "Assets.zip",
-      size: "12 MB",
-      type: "Archive",
-      uploadedAt: "2025-06-04",
-    },
-    {
-      id: 7,
-      icon: "xls.png",
-      name: "Budget.xlsx",
-      size: "1.1 MB",
-      type: "Excel Spreadsheet",
-      uploadedAt: "2025-06-03",
-    },
-    {
-      id: 8,
-      icon: "img.png",
-      name: "Banner.jpg",
-      size: "950 KB",
-      type: "Image",
-      uploadedAt: "2025-06-02",
-    },
-    {
-      id: 9,
-      icon: "code.png",
-      name: "AppCode.js",
-      size: "120 KB",
-      type: "JavaScript File",
-      uploadedAt: "2025-06-01",
-    },
-    {
-      id: 10,
-      icon: "audio.png",
-      name: "VoiceNote.mp3",
-      size: "3.2 MB",
-      type: "Audio",
-      uploadedAt: "2025-05-31",
-    },
-    {
-      id: 11,
-      icon: "img.png",
-      name: "Banner.jpg",
-      size: "950 KB",
-      type: "Image",
-      uploadedAt: "2025-06-02",
-    },
-    {
-      id: 12,
-      icon: "code.png",
-      name: "AppCode.js",
-      size: "120 KB",
-      type: "JavaScript File",
-      uploadedAt: "2025-06-01",
-    },
-    {
-      id: 13,
-      icon: "audio.png",
-      name: "VoiceNote.mp3",
-      size: "3.2 MB",
-      type: "Audio",
-      uploadedAt: "2025-05-31",
-    },
-  ];
-
   type User = {
     userId: number,
     userName: string,
@@ -153,18 +46,6 @@ const Dashboard = (): React.JSX.Element => {
   const [publicKeyStr, setPublicKeyStr] = useState<string>('')
   const [encryptedFiles, setencryptedFiles] = useState<EncryptedFileWithMetaData[]>([])
 
-  const genrateKeyPair = async () => {
-    const pair = await CryptoService.generateKeyPair();
-    setKeyPair(pair);
-
-    // export public key to sent to others
-
-    const exported = await window.crypto.subtle.exportKey('spki', pair.publicKey);
-    const exportedAsString = btoa(String.fromCharCode(...new Uint8Array(exported)))
-    setPublicKeyStr(exportedAsString);
-  }
-
-  // encrypting the files
   const encryptFiles = async (files: File[]) => {
     if (!keyPair && files?.length === 0) return;
 
@@ -195,34 +76,6 @@ const Dashboard = (): React.JSX.Element => {
     return result;
   }
 
-  // decrypting the files
-  const decryptionFiles = async () => {
-    if (!keyPair) return;
-
-    for (const encryptedFile of encryptedFiles) {
-      try {
-
-        // decrypt aes key
-        const aesKey = await CryptoService.decryptAesKey(
-          encryptedFile.encryptedKey,
-          keyPair.privateKey
-        )
-
-        // decrypt the file
-        const decryptData = await CryptoService.decryptFile(encryptedFile, aesKey)
-        const blob = new Blob([decryptData], { type: encryptedFile.fileType })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `decrypt ${encryptedFile.fileName}`
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-      catch (error) {
-        console.log(`error decrypting ${encryptedFile.fileName}`)
-      }
-    }
-  }
 
   const logout = async () => {
     console.log('logout clicked')
@@ -231,12 +84,11 @@ const Dashboard = (): React.JSX.Element => {
   }
 
   const [search, setSearch] = useState<string | null>('')
-  const [filteredFiles, setFilteredFiles] = useState<FileMetaData[]>(fileMetaData)
-  const [filesToDisplay, setFilesToDisplay] = useState<FileMetaData[]>(fileMetaData);
-  const [subMenu, setSubMenu] = useState<boolean>(false);
+  const [filesToDisplay, setFilesToDisplay] = useState<FileMetaData[] | null >(null);
+  const [filteredFiles, setFilteredFiles] = useState<FileMetaData[] | null>()
   const [openMenuId, setOpenMenuId] = useState<null | number>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filesToBeUploaded, setFilesToBeUploaded] = useState<File[]>([]);
+  const [isuploading, setIsuploading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const menuRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
@@ -248,6 +100,7 @@ const Dashboard = (): React.JSX.Element => {
     if (searchTerm === '') {
       setFilteredFiles(filesToDisplay);
     } else {
+      if (!filesToDisplay) return;
       const filtered = filesToDisplay.filter(file =>
         file.name.toLowerCase().includes(searchTerm) ||
         file.type.toLowerCase().includes(searchTerm)
@@ -293,8 +146,8 @@ const Dashboard = (): React.JSX.Element => {
     } catch (error) {
       console.error('Error fetching files:', error);
       // Fallback to default data if there's an error
-      setFilesToDisplay(fileMetaData);
-      setFilteredFiles(fileMetaData);
+      // setFilesToDisplay(fileMetaData);
+      // setFilteredFiles(fileMetaData);
     } finally {
       setIsLoading(false);
     }
@@ -322,75 +175,95 @@ const Dashboard = (): React.JSX.Element => {
 
 
   const uploadFiles = async (files: File[]): Promise<void> => {
+    setIsuploading(true);
     const result = await encryptFiles(files);
-    if (!result) return
-    console.log('upload function is in working')
+    if (!result) return;
+    console.log('upload function is in working');
     const formData = new FormData();
 
     for (const file of result) {
-      const encryptedBlob = new Blob([file.file], { type: file.fileType });
+        const encryptedBlob = new Blob([file.file], { type: file.fileType });
+        formData.append('files', encryptedBlob, file.fileName);
 
-      formData.append('files', encryptedBlob, file.fileName);
+        // Create proper Blobs for the key and IV
+        const keyBlob = new Blob([file.encryptedKey], { type: 'application/octet-stream' });
+        formData.append('encryptedKey', keyBlob, `${file.fileName}.key`);
 
-      // Optional: add metadata if needed
-      formData.append('encryptedKey', new Blob([file.encryptedKey]), file.fileName + '.key');
-
-      console.log(file.iv)
-      formData.append('iv', new Blob([file.iv]), file.fileName + '.iv');
-
+        const ivBlob = new Blob([file.iv], { type: 'application/octet-stream' });
+        formData.append('iv', ivBlob, `${file.fileName}.iv`);
     }
 
     const r = await uploadFileAction(formData);
     console.log(r);
-  };
+    setIsuploading(false);
+};
 
 
   // implementing view, download and delete functionalities
   // Add these functions to your Dashboard component
 
-// const fetchAndDecryptFile = async (fileId: string, action: 'view' | 'download') => {
-//   try {
-//     // 1. Get file metadata from API
-//     const response = await fetch(`/api/files/${fileId}`);
-//     const fileData = await response.json();
-    
-//     // 2. Retrieve private key from IndexedDB
-//     const privateKey = await getPrivateKeyFromIndexedDB(); // Implement this function
-    
-//     if (!privateKey) {
-//       throw new Error('Private key not found in IndexedDB');
-//     }
-    
-//     // 3. Download the encrypted file from Cloudinary
-//     const fileResponse = await fetch(fileData.url);
-//     const encryptedFileBuffer = await fileResponse.arrayBuffer();
-    
-//     // 4. Prepare the encrypted AES key and IV
-//     const encryptedKey = base64ToArrayBuffer(fileData.encryptedKey);
-//     const iv = base64ToArrayBuffer(fileData.iv);
-    
-//     // 5. Decrypt the AES key with RSA private key
-//     const aesKey = await CryptoService.decryptAesKey(encryptedKey, privateKey);
-    
-//     // 6. Decrypt the file
-//     const decryptedData = await CryptoService.decryptFile(
-//       { file: encryptedFileBuffer, iv },
-//       aesKey
-//     );
-    
-//     // 7. Handle based on action
-//     if (action === 'view') {
-//       viewDecryptedFile(decryptedData, fileData.type, fileData.name);
-//     } else {
-//       downloadDecryptedFile(decryptedData, fileData.type, fileData.name);
-//     }
-//   } catch (error) {
-//     console.error('Error processing file:', error);
-//     alert(`Failed to ${action} file: ${error.message}`);
-//   }
-// };
+  function base64ToUint8Array(base64: string) {
+  // Decode the base64 string to binary string
+  const binaryString = atob(base64);
 
-const viewDecryptedFile = (data: ArrayBuffer, mimeType: string, fileName: string) => {
+  // Create a Uint8Array from the binary string
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  return bytes;
+}
+
+
+const fetchAndDecryptFile = async (fileId: string, action: 'view' | 'download') => {
+  try {
+    // 1. Get file metadata from API
+    const response = await fetch(`/api/files/${fileId}`);
+    const fileData = await response.json();
+    console.log('file data is : ', fileData)
+    // 2. Retrieve private key from IndexedDB
+    const privateKey = await getPrivateKeyFromIndexedDB(); // Implement this function
+    
+    if (!privateKey) {
+      throw new Error('Private key not found in IndexedDB');
+    }
+    
+    // 3. Download the encrypted file from Cloudinary
+    const fileResponse = await fetch(fileData.url);
+    const encryptedFileBuffer = await fileResponse.arrayBuffer();
+    const encryptedFileArray = new Uint8Array(encryptedFileBuffer);
+    
+    // 4. Prepare the encrypted AES key and IV
+    const encryptedKey = base64ToArrayBuffer(fileData.encryptedKey);
+    // const iv = base64ToArrayBuffer(fileData.iv);
+    const iv = base64ToUint8Array(fileData.iv)
+    
+    // 5. Decrypt the AES key with RSA private key
+    const aesKey = await CryptoService.decryptAesKey(encryptedKey, privateKey);
+    
+    // 6. Decrypt the file
+    const decryptedData = await CryptoService.decryptFile(
+      {  file: encryptedFileArray, iv, encryptedKey},
+      aesKey
+    );
+
+    
+    // 7. Handle based on action
+    if (action === 'view') {
+      viewDecryptedFile(decryptedData, fileData.type, fileData.name);
+    } else {
+      downloadDecryptedFile(decryptedData, fileData.type, fileData.name);
+    }
+  } catch (error) {
+    console.error('Error processing file:', error);
+    // alert(`Failed to ${action} file: ${error.message}`);
+  }
+};
+
+const viewDecryptedFile = (data: Uint8Array, mimeType: string, fileName: string) => {
+  // Convert Uint8Array to Blob - Blob constructor can accept Uint8Array directly
   const blob = new Blob([data], { type: mimeType });
   const url = URL.createObjectURL(blob);
   
@@ -405,7 +278,8 @@ const viewDecryptedFile = (data: ArrayBuffer, mimeType: string, fileName: string
   }
 };
 
-const downloadDecryptedFile = (data: ArrayBuffer, mimeType: string, fileName: string) => {
+const downloadDecryptedFile = (data: Uint8Array, mimeType: string, fileName: string) => {
+  // Convert Uint8Array to Blob
   const blob = new Blob([data], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -455,6 +329,27 @@ const getPrivateKeyFromIndexedDB = async (): Promise<CryptoKey | null> => {
   });
 };
 
+const deleteFile = async (fileId: string) => {
+  if (!confirm('Are you sure you want to delete this file?')) return;
+  
+  try {
+    const response = await fetch(`/api/files/${fileId}`, {
+      method: 'DELETE'
+    });
+    const result = await response.json();
+    
+    if (result.success) {
+      await getFilesDataFromServer();
+      alert('File deleted successfully');
+    } else {
+      alert('Failed to delete file');
+    }
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    alert('Failed to delete file');
+  }
+};
+
   return (
     <div className="bg-[#0b1338] h-screen p-2 flex flex-col">
       {/* Fixed: Corrected height class */}
@@ -479,11 +374,7 @@ const getPrivateKeyFromIndexedDB = async (): Promise<CryptoKey | null> => {
               className='bg-blue-300 p-2 rounded-xl text-black font-bold hover:bg-blue-400 hover:cursor-pointer'
               onClick={logout}
             >Logout</button>
-            {/* <label className="inline-flex items-center cursor-pointer">
-              <input type="checkbox" value="" className="sr-only peer" />
-              <div className="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:absolute after:top-[2px] after:start-[2px] after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:bg-blue-600"></div>
-              <span className="ms-3 text-lg font-medium text-gray-300">Theme</span>
-            </label> */}
+            
           </div>
         </div>
       </div>
@@ -537,11 +428,11 @@ const getPrivateKeyFromIndexedDB = async (): Promise<CryptoKey | null> => {
           <div className="filescontainer flex flex-wrap gap-3 min-h-0 max-h-full overflow-auto">
             {isLoading ? (
               <div>Loading files...</div>
-            ) : filteredFiles.length === 0 ? (
+            ) : filteredFiles?.length === 0 ? (
               <div>No files found matching your search</div>
             ) : ''}
 
-            {filteredFiles.map((file) => {
+            {filteredFiles?.map((file) => {
               return (
                 <div
                   key={file.id}
@@ -576,18 +467,22 @@ const getPrivateKeyFromIndexedDB = async (): Promise<CryptoKey | null> => {
                       className={`${openMenuId === file.id ? '' : 'hidden'
                         } rounded-sm p-2 bg-gray-400 absolute right-0 z-10`}
                     >
-                      <li className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>View</li>
-                      <li className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>Delete</li>
-                      <li className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>Download</li>
+                      <li onClick={() => fetchAndDecryptFile((file.id).toString(),'view')} className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>View</li>
+                      <li onClick={() => deleteFile((file.id).toString())} className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>Delete</li>
+                      <li onClick={() => fetchAndDecryptFile((file.id).toString(),'download')} className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>Download</li>
                     </ul>
                   </div>
                 </div>
               );
             })}
-            {filteredFiles.length === 0 && (
+            {filteredFiles?.length === 0 && (
               <div>
                 No fileFound matching your search
               </div>
+            )}
+
+            {isuploading && (
+              <div className='relative min-w-[250px] max-h-[76px] flex flex-grow items-center gap-2 text-black bg-white py-2 px-2 rounded-xl max-w-[48%]'>uploading file...</div>
             )}
 
           </div>
