@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { uploadFileAction } from '@/Action/uploadFileAction';
 import Link from 'next/link';
 import { CryptoService, KeyPair, EncryptedFile } from '@/lib/crypto';
+import { getKeyPairFromIndexedDB, generateAndStoreKeyPair, keyPairExists } from '@/lib/keyManagement';
 
 const Dashboard = (): React.JSX.Element => {
 
@@ -46,6 +47,27 @@ const Dashboard = (): React.JSX.Element => {
   const [publicKeyStr, setPublicKeyStr] = useState<string>('')
   const [encryptedFiles, setencryptedFiles] = useState<EncryptedFileWithMetaData[]>([])
 
+
+  useEffect(() => {
+    const initializeKeys = async () => {
+      const exists = await keyPairExists();
+      if (!exists) {
+        // Option 1: Redirect to registration
+        // window.location.href = '/register';
+        
+        // Option 2: Generate new keys
+        const newKeyPair = await generateAndStoreKeyPair();
+        setKeyPair(newKeyPair);
+      } else {
+        const pair = await getKeyPairFromIndexedDB();
+        setKeyPair(pair);
+      }
+    };
+    
+    initializeKeys();
+  }, []);
+
+
   const encryptFiles = async (files: File[]) => {
     if (!keyPair && files?.length === 0) return;
 
@@ -67,6 +89,7 @@ const Dashboard = (): React.JSX.Element => {
           fileType: file.type,
           encryptedKey: encryptedAesKey
         });
+        console.log('key pair is : ' , keyPair)
       }
       catch (error) {
         console.log(`error encrypting ${file.name} : `, error);
@@ -374,7 +397,7 @@ const deleteFile = async (fileId: string) => {
               className='bg-blue-300 p-2 rounded-xl text-black font-bold hover:bg-blue-400 hover:cursor-pointer'
               onClick={logout}
             >Logout</button>
-            
+
           </div>
         </div>
       </div>

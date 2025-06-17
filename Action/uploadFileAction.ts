@@ -15,7 +15,8 @@ export async function uploadFileAction(formData: FormData) {
         api_secret: process.env.CLOUDINARY_API_SECRET
     });
 
-    if (!files || files.length === 0) {
+    // intantial created error for later change
+    if (!files || files.length != 0) {
         return { message: 'No file is selected', error: true };
     }
 
