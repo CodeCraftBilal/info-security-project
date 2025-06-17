@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { decrypt } from '@/lib/session'
 import { cookies } from 'next/headers'
- 
+
 // 1. Specify protected and public routes
 const protectedRoutes = ['/dashboard']
 const publicRoutes = ['/login', '/register', '/']

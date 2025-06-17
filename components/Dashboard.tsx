@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { uploadFileAction } from '@/Action/uploadFileAction';
 import Link from 'next/link';
 import { CryptoService, KeyPair, EncryptedFile } from '@/lib/crypto';
-import { blob } from 'stream/consumers';
 
 const Dashboard = (): React.JSX.Element => {
 
@@ -13,7 +12,6 @@ const Dashboard = (): React.JSX.Element => {
     fileType: string
   }
   // encryptedKey: ArrayBuffer
-
   type FileMetaData = {
     id: number,
     icon: string,
@@ -234,6 +232,7 @@ const Dashboard = (): React.JSX.Element => {
 
   const [search, setSearch] = useState<string | null>('')
   const [filteredFiles, setFilteredFiles] = useState<FileMetaData[]>(fileMetaData)
+  const [filesToDisplay, setFilesToDisplay] = useState<FileMetaData[]>(fileMetaData);
   const [subMenu, setSubMenu] = useState<boolean>(false);
   const [openMenuId, setOpenMenuId] = useState<null | number>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -245,18 +244,23 @@ const Dashboard = (): React.JSX.Element => {
   const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const searchTerm = e.target.value.toLowerCase();
     setSearch(e.target.value);
-    console.log(search)
+
     if (searchTerm === '') {
-      setFilteredFiles(fileMetaData)
-    }
-    else {
-      const filtered = fileMetaData.filter(file =>
+      setFilteredFiles(filesToDisplay);
+    } else {
+      const filtered = filesToDisplay.filter(file =>
         file.name.toLowerCase().includes(searchTerm) ||
         file.type.toLowerCase().includes(searchTerm)
-      )
+      );
       setFilteredFiles(filtered);
     }
-  }
+  };
+
+  // loading feature
+
+  const [isLoading, setIsLoading] = useState(true);
+
+
   // menu disappear feature
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -270,11 +274,34 @@ const Dashboard = (): React.JSX.Element => {
         setOpenMenuId(null);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
+
+  // fetch files metadata from server
+  const getFilesDataFromServer = async () => {
+    setIsLoading(true);
+    try {
+      console.log('get files request sent');
+      const response = await fetch('/api/getfiles');
+      const data: FileMetaData[] = await response.json();
+      console.log('Received files:', data);
+      setFilesToDisplay(data);
+      setFilteredFiles(data); // Update filtered files as well
+    } catch (error) {
+      console.error('Error fetching files:', error);
+      // Fallback to default data if there's an error
+      setFilesToDisplay(fileMetaData);
+      setFilteredFiles(fileMetaData);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getFilesDataFromServer();
   }, []);
 
   // upload file feature
@@ -317,6 +344,117 @@ const Dashboard = (): React.JSX.Element => {
     console.log(r);
   };
 
+
+  // implementing view, download and delete functionalities
+  // Add these functions to your Dashboard component
+
+// const fetchAndDecryptFile = async (fileId: string, action: 'view' | 'download') => {
+//   try {
+//     // 1. Get file metadata from API
+//     const response = await fetch(`/api/files/${fileId}`);
+//     const fileData = await response.json();
+    
+//     // 2. Retrieve private key from IndexedDB
+//     const privateKey = await getPrivateKeyFromIndexedDB(); // Implement this function
+    
+//     if (!privateKey) {
+//       throw new Error('Private key not found in IndexedDB');
+//     }
+    
+//     // 3. Download the encrypted file from Cloudinary
+//     const fileResponse = await fetch(fileData.url);
+//     const encryptedFileBuffer = await fileResponse.arrayBuffer();
+    
+//     // 4. Prepare the encrypted AES key and IV
+//     const encryptedKey = base64ToArrayBuffer(fileData.encryptedKey);
+//     const iv = base64ToArrayBuffer(fileData.iv);
+    
+//     // 5. Decrypt the AES key with RSA private key
+//     const aesKey = await CryptoService.decryptAesKey(encryptedKey, privateKey);
+    
+//     // 6. Decrypt the file
+//     const decryptedData = await CryptoService.decryptFile(
+//       { file: encryptedFileBuffer, iv },
+//       aesKey
+//     );
+    
+//     // 7. Handle based on action
+//     if (action === 'view') {
+//       viewDecryptedFile(decryptedData, fileData.type, fileData.name);
+//     } else {
+//       downloadDecryptedFile(decryptedData, fileData.type, fileData.name);
+//     }
+//   } catch (error) {
+//     console.error('Error processing file:', error);
+//     alert(`Failed to ${action} file: ${error.message}`);
+//   }
+// };
+
+const viewDecryptedFile = (data: ArrayBuffer, mimeType: string, fileName: string) => {
+  const blob = new Blob([data], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  
+  // For PDFs, images, and text files we can display in a new tab
+  if (mimeType.includes('pdf') || 
+      mimeType.startsWith('image/') || 
+      mimeType.startsWith('text/')) {
+    window.open(url, '_blank');
+  } else {
+    // For unsupported types, download instead
+    downloadDecryptedFile(data, mimeType, fileName);
+  }
+};
+
+const downloadDecryptedFile = (data: ArrayBuffer, mimeType: string, fileName: string) => {
+  const blob = new Blob([data], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+// Helper function to convert base64 to ArrayBuffer
+const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+};
+
+// Example function to get private key from IndexedDB
+const getPrivateKeyFromIndexedDB = async (): Promise<CryptoKey | null> => {
+  return new Promise((resolve) => {
+    const request = indexedDB.open('KeyStore', 1);
+    
+    request.onsuccess = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      const transaction = db.transaction('keys', 'readonly');
+      const store = transaction.objectStore('keys');
+      const getRequest = store.get('secureSharePrivateKey'); // instead of private key
+      
+      getRequest.onsuccess = () => {
+        resolve(getRequest.result || null);
+      };
+      
+      getRequest.onerror = () => {
+        console.error('Error getting private key from IndexedDB');
+        resolve(null);
+      };
+    };
+    
+    request.onerror = () => {
+      console.error('Error opening IndexedDB');
+      resolve(null);
+    };
+  });
+};
+
   return (
     <div className="bg-[#0b1338] h-screen p-2 flex flex-col">
       {/* Fixed: Corrected height class */}
@@ -337,9 +475,9 @@ const Dashboard = (): React.JSX.Element => {
         <div>
 
           <div className="toggle flex gap-2 text-lg">
-            <button 
-            className='bg-blue-300 p-2 rounded-xl text-black font-bold hover:bg-blue-400 hover:cursor-pointer'
-            onClick={logout}
+            <button
+              className='bg-blue-300 p-2 rounded-xl text-black font-bold hover:bg-blue-400 hover:cursor-pointer'
+              onClick={logout}
             >Logout</button>
             {/* <label className="inline-flex items-center cursor-pointer">
               <input type="checkbox" value="" className="sr-only peer" />
@@ -394,7 +532,15 @@ const Dashboard = (): React.JSX.Element => {
             <button><img className='' src="/search.png" width={35} height={35} alt="search" /></button>
           </div>
           {/* flex flex-wrap gap-3 w-full h-[80%] overflow-auto */}
+
+
           <div className="filescontainer flex flex-wrap gap-3 min-h-0 max-h-full overflow-auto">
+            {isLoading ? (
+              <div>Loading files...</div>
+            ) : filteredFiles.length === 0 ? (
+              <div>No files found matching your search</div>
+            ) : ''}
+
             {filteredFiles.map((file) => {
               return (
                 <div

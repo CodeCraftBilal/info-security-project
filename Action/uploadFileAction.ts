@@ -58,6 +58,7 @@ export async function uploadFileAction(formData: FormData) {
 
                 await db.collection('files').insertOne({
                     fileName: file.name,
+                    fileSize: file.size,
                     cloudinaryUrl: uploadResult.secure_url,
                     encryptedAesKey: keyBuffer.toString('base64'),
                     mimeType: file.type,
