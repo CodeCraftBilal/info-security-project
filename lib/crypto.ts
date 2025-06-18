@@ -94,6 +94,12 @@ export class CryptoService {
 
   // Decrypt AES key with RSA private key
   static async decryptAesKey(encryptedKey: ArrayBuffer, privateKey: CryptoKey): Promise<CryptoKey> {
+  try {
+    // Verify the private key has unwrapKey usage
+    if (!privateKey.usages.includes('unwrapKey')) {
+      throw new Error('Private key does not have unwrapKey usage');
+    }
+
     return await window.crypto.subtle.unwrapKey(
       "raw",
       encryptedKey,
@@ -108,7 +114,11 @@ export class CryptoService {
       true,
       ["encrypt", "decrypt"]
     );
+  } catch (error) {
+    console.error('Error in decryptAesKey:', error);
+    throw error;
   }
+}
 
   // Decrypt file with AES key
   static async decryptFile(encryptedFile: EncryptedFile, aesKey: CryptoKey): Promise<Uint8Array> {

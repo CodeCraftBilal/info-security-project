@@ -289,7 +289,9 @@ const Dashboard = (): React.JSX.Element => {
       const iv = base64ToUint8Array(fileData.iv)
 
       // 5. Decrypt the AES key with RSA private key
+      console.log('start decrypting aes key');
       const aesKey = await CryptoService.decryptAesKey(encryptedKey, privateKey);
+      console.log('after decrypting aes key')
 
       // 6. Decrypt the file
       const decryptedData = await CryptoService.decryptFile(
@@ -378,25 +380,37 @@ const Dashboard = (): React.JSX.Element => {
   };
 
   const deleteFile = async (fileId: string) => {
-    if (!confirm('Are you sure you want to delete this file?')) return;
+  if (!confirm('Are you sure you want to permanently delete this file?')) return;
 
-    try {
-      const response = await fetch(`/api/files/${fileId}`, {
-        method: 'DELETE'
-      });
-      const result = await response.json();
+  try {
+    setIsLoading(true);
+    
+    const response = await fetch(`/api/files/${fileId}`, {
+      method: 'DELETE'
+    });
+    
+    const result = await response.json();
 
-      if (result.success) {
-        await getFilesDataFromServer();
-        alert('File deleted successfully');
-      } else {
-        alert('Failed to delete file');
-      }
-    } catch (error) {
-      console.error('Error deleting file:', error);
-      alert('Failed to delete file');
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to delete file');
     }
-  };
+
+    if (result.success) {
+      // Refresh the file list
+      await getFilesDataFromServer();
+      
+      // Show success message (consider using toast instead)
+      alert('File deleted successfully');
+    } else {
+      throw new Error(result.error || 'Failed to delete file');
+    }
+  } catch (error: any) {
+    console.error('Error deleting file:', error);
+    alert(`Failed to delete file: ${error.message}`);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="bg-[#0b1338] h-screen p-2 flex flex-col">

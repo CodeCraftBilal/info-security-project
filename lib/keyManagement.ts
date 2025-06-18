@@ -102,14 +102,14 @@ export const getKeyPairFromIndexedDB = async (): Promise<KeyPair | null> => {
         result.privateKey,
         { name: 'RSA-OAEP', hash: 'SHA-256' },
         true,
-        ['decrypt']
+        ['decrypt', 'unwrapKey'] // Add unwrapKey here
       ),
       window.crypto.subtle.importKey(
         'spki',
         result.publicKey,
         { name: 'RSA-OAEP', hash: 'SHA-256' },
         true,
-        ['encrypt', 'wrapKey'] // Add wrapKey usage here
+        ['encrypt', 'wrapKey']
       )
     ]);
 
@@ -133,10 +133,9 @@ export const generateAndStoreKeyPair = async (): Promise<KeyPair> => {
         hash: { name: 'SHA-256' }
       },
       true, // Extractable
-      ['encrypt', 'decrypt'] // For private key
+      ['encrypt', 'decrypt', 'wrapKey', 'unwrapKey'] // Add unwrapKey here
     );
 
-    // Explicitly specify usages when importing keys
     const formattedKeyPair: KeyPair = {
       privateKey: keyPair.privateKey,
       publicKey: keyPair.publicKey
