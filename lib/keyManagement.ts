@@ -23,12 +23,12 @@ const getDB = async (): Promise<IDBDatabase> => {
 
     request.onsuccess = () => {
       dbInstance = request.result;
-      
+
       // Add error handling for future transactions
       dbInstance.onerror = (e) => {
         console.error('Database error:', e);
       };
-      
+
       resolve(dbInstance);
     };
 
@@ -109,7 +109,7 @@ export const getKeyPairFromIndexedDB = async (): Promise<KeyPair | null> => {
         result.publicKey,
         { name: 'RSA-OAEP', hash: 'SHA-256' },
         true,
-        ['encrypt']
+        ['encrypt', 'wrapKey'] // Add wrapKey usage here
       )
     ]);
 
@@ -130,12 +130,13 @@ export const generateAndStoreKeyPair = async (): Promise<KeyPair> => {
         name: 'RSA-OAEP',
         modulusLength: 2048,
         publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-        hash: 'SHA-256'
+        hash: { name: 'SHA-256' }
       },
-      true,
-      ['encrypt', 'decrypt']
+      true, // Extractable
+      ['encrypt', 'decrypt'] // For private key
     );
 
+    // Explicitly specify usages when importing keys
     const formattedKeyPair: KeyPair = {
       privateKey: keyPair.privateKey,
       publicKey: keyPair.publicKey

@@ -8,7 +8,7 @@ export interface KeyPair {
 }
 
 export interface EncryptedFile {
-  file: Uint8Array ;
+  file: Uint8Array;
   iv: Uint8Array;
   encryptedKey: ArrayBuffer;
 }
@@ -64,15 +64,33 @@ export class CryptoService {
 
   // Encrypt AES key with RSA public key
   static async encryptAesKey(aesKey: CryptoKey, publicKey: CryptoKey): Promise<ArrayBuffer> {
-    return await window.crypto.subtle.wrapKey(
+  try {
+    // Verify the public key can be used for wrapping
+    if (!publicKey.usages.includes('wrapKey')) {
+      // If not, re-import the key with correct usages
+      const exported = await window.crypto.subtle.exportKey('spki', publicKey);
+      publicKey = await window.crypto.subtle.importKey(
+        'spki',
+        exported,
+        { name: 'RSA-OAEP', hash: 'SHA-256' },
+        true,
+        ['encrypt', 'wrapKey']
+      );
+    }
+
+    const encryptedKey = await window.crypto.subtle.wrapKey(
       "raw",
       aesKey,
       publicKey,
-      {
-        name: "RSA-OAEP",
-      }
+      { name: "RSA-OAEP" }
     );
+
+    return encryptedKey;
+  } catch (error) {
+    console.error('Error in encryptAesKey:', error);
+    throw error;
   }
+}
 
   // Decrypt AES key with RSA private key
   static async decryptAesKey(encryptedKey: ArrayBuffer, privateKey: CryptoKey): Promise<CryptoKey> {

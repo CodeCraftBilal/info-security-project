@@ -54,50 +54,70 @@ const Dashboard = (): React.JSX.Element => {
       if (!exists) {
         // Option 1: Redirect to registration
         // window.location.href = '/register';
-        
+
         // Option 2: Generate new keys
         const newKeyPair = await generateAndStoreKeyPair();
         setKeyPair(newKeyPair);
       } else {
         const pair = await getKeyPairFromIndexedDB();
+        console.log('pair initialized: ', pair)
         setKeyPair(pair);
       }
     };
-    
+
     initializeKeys();
   }, []);
 
 
   const encryptFiles = async (files: File[]) => {
-    if (!keyPair && files?.length === 0) return;
+    if (!keyPair || files?.length === 0) {
+      console.error('Missing key pair or files');
+      return;
+    }
 
+    console.log('Encrypting files with key pair:', keyPair);
     const result: EncryptedFileWithMetaData[] = [];
 
     for (const file of files) {
       try {
-        const aesKey = await CryptoService.generateAesKey();
-        let encryptedAesKey: ArrayBuffer;
+        console.log(`Processing file: ${file.name}`);
 
-        // encrypt the file
-        const encryptedFile = await CryptoService.encryptFile(file, aesKey)
-        if (keyPair)
-          encryptedFile.encryptedKey = await CryptoService.encryptAesKey(aesKey, keyPair?.publicKey);
-        encryptedAesKey = encryptedFile.encryptedKey;
+        // Generate AES key
+        const aesKey = await CryptoService.generateAesKey();
+        console.log('AES key generated:', aesKey);
+
+        // Encrypt the file
+        const encryptedFile = await CryptoService.encryptFile(file, aesKey);
+        console.log('File encrypted, now encrypting AES key...');
+
+        // Encrypt the AES key with RSA public key
+        let encryptedAesKey: ArrayBuffer;
+        try {
+          encryptedAesKey = await CryptoService.encryptAesKey(aesKey, keyPair.publicKey);
+          console.log('AES key encrypted successfully');
+        } catch (encryptError) {
+          console.error(`Failed to encrypt AES key for ${file.name}:`, encryptError);
+          throw encryptError;
+        }
+
         result.push({
           ...encryptedFile,
           fileName: file.name,
           fileType: file.type,
           encryptedKey: encryptedAesKey
         });
-        console.log('key pair is : ' , keyPair)
-      }
-      catch (error) {
-        console.log(`error encrypting ${file.name} : `, error);
+
+        console.log('File processed successfully:', file.name);
+      } catch (error) {
+        console.error(`Error encrypting ${file.name}:`, error);
+        // Continue with next file even if one fails
+        continue;
       }
     }
+
     setencryptedFiles(result);
     return result;
-  }
+  };
 
 
   const logout = async () => {
@@ -107,7 +127,7 @@ const Dashboard = (): React.JSX.Element => {
   }
 
   const [search, setSearch] = useState<string | null>('')
-  const [filesToDisplay, setFilesToDisplay] = useState<FileMetaData[] | null >(null);
+  const [filesToDisplay, setFilesToDisplay] = useState<FileMetaData[] | null>(null);
   const [filteredFiles, setFilteredFiles] = useState<FileMetaData[] | null>()
   const [openMenuId, setOpenMenuId] = useState<null | number>(null);
   const [filesToBeUploaded, setFilesToBeUploaded] = useState<File[]>([]);
@@ -191,6 +211,7 @@ const Dashboard = (): React.JSX.Element => {
     console.log('upload button clicked and files are selected')
     if (e.target.files) {
       const files = Array.from(e.target.files);
+      console.log('files to upload are: ', files)
       setFilesToBeUploaded(files);
       await uploadFiles(files)
     }
@@ -205,173 +226,177 @@ const Dashboard = (): React.JSX.Element => {
     const formData = new FormData();
 
     for (const file of result) {
-        const encryptedBlob = new Blob([file.file], { type: file.fileType });
-        formData.append('files', encryptedBlob, file.fileName);
+      const encryptedBlob = new Blob([file.file], { type: file.fileType });
+      formData.append('files', encryptedBlob, file.fileName);
 
-        // Create proper Blobs for the key and IV
-        const keyBlob = new Blob([file.encryptedKey], { type: 'application/octet-stream' });
-        formData.append('encryptedKey', keyBlob, `${file.fileName}.key`);
+      // Create proper Blobs for the key and IV
+      const keyBlob = new Blob([file.encryptedKey], { type: 'application/octet-stream' });
+      formData.append('encryptedKey', keyBlob, `${file.fileName}.key`);
 
-        const ivBlob = new Blob([file.iv], { type: 'application/octet-stream' });
-        formData.append('iv', ivBlob, `${file.fileName}.iv`);
+      const ivBlob = new Blob([file.iv], { type: 'application/octet-stream' });
+      formData.append('iv', ivBlob, `${file.fileName}.iv`);
     }
 
     const r = await uploadFileAction(formData);
     console.log(r);
     setIsuploading(false);
-};
+  };
 
 
   // implementing view, download and delete functionalities
   // Add these functions to your Dashboard component
 
   function base64ToUint8Array(base64: string) {
-  // Decode the base64 string to binary string
-  const binaryString = atob(base64);
+    // Decode the base64 string to binary string
+    const binaryString = atob(base64);
 
-  // Create a Uint8Array from the binary string
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+    // Create a Uint8Array from the binary string
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    return bytes;
   }
 
-  return bytes;
-}
+
+  const fetchAndDecryptFile = async (fileId: string, action: 'view' | 'download') => {
+    try {
+      // 1. Get file metadata from API
+      const response = await fetch(`/api/files/${fileId}`);
+      const fileData = await response.json();
+      console.log('file data is : ', fileData)
+
+      // 2. Retrieve private key from IndexedDB
+      // const privateKey = await getPrivateKeyFromIndexedDB(); // Implement this function
+      const privateKey = keyPair?.privateKey;
+      console.log('private key is: ' , privateKey)
+      
+      if (!privateKey) {
+        throw new Error('Private key not found in IndexedDB');
+      }
+
+      // 3. Download the encrypted file from Cloudinary
+      const fileResponse = await fetch(fileData.url);
+      const encryptedFileBuffer = await fileResponse.arrayBuffer();
+      const encryptedFileArray = new Uint8Array(encryptedFileBuffer);
+      console.log('encrypted file is : ', encryptedFileArray);
+
+      // 4. Prepare the encrypted AES key and IV
+      const encryptedKey = base64ToArrayBuffer(fileData.encryptedKey);
+      // const iv = base64ToArrayBuffer(fileData.iv);
+      const iv = base64ToUint8Array(fileData.iv)
+
+      // 5. Decrypt the AES key with RSA private key
+      const aesKey = await CryptoService.decryptAesKey(encryptedKey, privateKey);
+
+      // 6. Decrypt the file
+      const decryptedData = await CryptoService.decryptFile(
+        { file: encryptedFileArray, iv, encryptedKey },
+        aesKey
+      );
 
 
-const fetchAndDecryptFile = async (fileId: string, action: 'view' | 'download') => {
-  try {
-    // 1. Get file metadata from API
-    const response = await fetch(`/api/files/${fileId}`);
-    const fileData = await response.json();
-    console.log('file data is : ', fileData)
-    // 2. Retrieve private key from IndexedDB
-    const privateKey = await getPrivateKeyFromIndexedDB(); // Implement this function
-    
-    if (!privateKey) {
-      throw new Error('Private key not found in IndexedDB');
+      // 7. Handle based on action
+      if (action === 'view') {
+        viewDecryptedFile(decryptedData, fileData.type, fileData.name);
+      } else {
+        downloadDecryptedFile(decryptedData, fileData.type, fileData.name);
+      }
+    } catch (error) {
+      console.error('Error processing file:', error);
+      // alert(`Failed to ${action} file: ${error.message}`);
     }
-    
-    // 3. Download the encrypted file from Cloudinary
-    const fileResponse = await fetch(fileData.url);
-    const encryptedFileBuffer = await fileResponse.arrayBuffer();
-    const encryptedFileArray = new Uint8Array(encryptedFileBuffer);
-    
-    // 4. Prepare the encrypted AES key and IV
-    const encryptedKey = base64ToArrayBuffer(fileData.encryptedKey);
-    // const iv = base64ToArrayBuffer(fileData.iv);
-    const iv = base64ToUint8Array(fileData.iv)
-    
-    // 5. Decrypt the AES key with RSA private key
-    const aesKey = await CryptoService.decryptAesKey(encryptedKey, privateKey);
-    
-    // 6. Decrypt the file
-    const decryptedData = await CryptoService.decryptFile(
-      {  file: encryptedFileArray, iv, encryptedKey},
-      aesKey
-    );
+  };
 
-    
-    // 7. Handle based on action
-    if (action === 'view') {
-      viewDecryptedFile(decryptedData, fileData.type, fileData.name);
-    } else {
-      downloadDecryptedFile(decryptedData, fileData.type, fileData.name);
-    }
-  } catch (error) {
-    console.error('Error processing file:', error);
-    // alert(`Failed to ${action} file: ${error.message}`);
-  }
-};
+  const viewDecryptedFile = (data: Uint8Array, mimeType: string, fileName: string) => {
+    // Convert Uint8Array to Blob - Blob constructor can accept Uint8Array directly
+    const blob = new Blob([data], { type: mimeType });
+    const url = URL.createObjectURL(blob);
 
-const viewDecryptedFile = (data: Uint8Array, mimeType: string, fileName: string) => {
-  // Convert Uint8Array to Blob - Blob constructor can accept Uint8Array directly
-  const blob = new Blob([data], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  
-  // For PDFs, images, and text files we can display in a new tab
-  if (mimeType.includes('pdf') || 
-      mimeType.startsWith('image/') || 
+    // For PDFs, images, and text files we can display in a new tab
+    if (mimeType.includes('pdf') ||
+      mimeType.startsWith('image/') ||
       mimeType.startsWith('text/')) {
-    window.open(url, '_blank');
-  } else {
-    // For unsupported types, download instead
-    downloadDecryptedFile(data, mimeType, fileName);
-  }
-};
+      window.open(url, '_blank');
+    } else {
+      // For unsupported types, download instead
+      downloadDecryptedFile(data, mimeType, fileName);
+    }
+  };
 
-const downloadDecryptedFile = (data: Uint8Array, mimeType: string, fileName: string) => {
-  // Convert Uint8Array to Blob
-  const blob = new Blob([data], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-};
+  const downloadDecryptedFile = (data: Uint8Array, mimeType: string, fileName: string) => {
+    // Convert Uint8Array to Blob
+    const blob = new Blob([data], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
-// Helper function to convert base64 to ArrayBuffer
-const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
-};
+  // Helper function to convert base64 to ArrayBuffer
+  const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  };
 
-// Example function to get private key from IndexedDB
-const getPrivateKeyFromIndexedDB = async (): Promise<CryptoKey | null> => {
-  return new Promise((resolve) => {
-    const request = indexedDB.open('KeyStore', 1);
-    
-    request.onsuccess = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      const transaction = db.transaction('keys', 'readonly');
-      const store = transaction.objectStore('keys');
-      const getRequest = store.get('secureSharePrivateKey'); // instead of private key
-      
-      getRequest.onsuccess = () => {
-        resolve(getRequest.result || null);
+  // Example function to get private key from IndexedDB
+  const getPrivateKeyFromIndexedDB = async (): Promise<CryptoKey | null> => {
+    return new Promise((resolve) => {
+      const request = indexedDB.open('KeyStore', 1);
+
+      request.onsuccess = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        const transaction = db.transaction('keys', 'readonly');
+        const store = transaction.objectStore('keys');
+        const getRequest = store.get('secureSharePrivateKey');
+
+        getRequest.onsuccess = () => {
+          resolve(getRequest.result || null);
+        };
+
+        getRequest.onerror = () => {
+          console.error('Error getting private key from IndexedDB');
+          resolve(null);
+        };
       };
-      
-      getRequest.onerror = () => {
-        console.error('Error getting private key from IndexedDB');
+
+      request.onerror = () => {
+        console.error('Error opening IndexedDB');
         resolve(null);
       };
-    };
-    
-    request.onerror = () => {
-      console.error('Error opening IndexedDB');
-      resolve(null);
-    };
-  });
-};
-
-const deleteFile = async (fileId: string) => {
-  if (!confirm('Are you sure you want to delete this file?')) return;
-  
-  try {
-    const response = await fetch(`/api/files/${fileId}`, {
-      method: 'DELETE'
     });
-    const result = await response.json();
-    
-    if (result.success) {
-      await getFilesDataFromServer();
-      alert('File deleted successfully');
-    } else {
+  };
+
+  const deleteFile = async (fileId: string) => {
+    if (!confirm('Are you sure you want to delete this file?')) return;
+
+    try {
+      const response = await fetch(`/api/files/${fileId}`, {
+        method: 'DELETE'
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        await getFilesDataFromServer();
+        alert('File deleted successfully');
+      } else {
+        alert('Failed to delete file');
+      }
+    } catch (error) {
+      console.error('Error deleting file:', error);
       alert('Failed to delete file');
     }
-  } catch (error) {
-    console.error('Error deleting file:', error);
-    alert('Failed to delete file');
-  }
-};
+  };
 
   return (
     <div className="bg-[#0b1338] h-screen p-2 flex flex-col">
@@ -490,9 +515,9 @@ const deleteFile = async (fileId: string) => {
                       className={`${openMenuId === file.id ? '' : 'hidden'
                         } rounded-sm p-2 bg-gray-400 absolute right-0 z-10`}
                     >
-                      <li onClick={() => fetchAndDecryptFile((file.id).toString(),'view')} className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>View</li>
+                      <li onClick={() => fetchAndDecryptFile((file.id).toString(), 'view')} className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>View</li>
                       <li onClick={() => deleteFile((file.id).toString())} className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>Delete</li>
-                      <li onClick={() => fetchAndDecryptFile((file.id).toString(),'download')} className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>Download</li>
+                      <li onClick={() => fetchAndDecryptFile((file.id).toString(), 'download')} className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>Download</li>
                     </ul>
                   </div>
                 </div>

@@ -7,7 +7,7 @@ export async function uploadFileAction(formData: FormData) {
     const keys = formData.getAll('encryptedKey');
     const ivs = formData.getAll('iv');
 
-    console.log(keys)
+    console.log('keys: ', keys)
 
     cloudinary.config({
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -15,8 +15,7 @@ export async function uploadFileAction(formData: FormData) {
         api_secret: process.env.CLOUDINARY_API_SECRET
     });
 
-    // intantial created error for later change
-    if (!files || files.length != 0) {
+    if (!files || files.length == 0) {
         return { message: 'No file is selected', error: true };
     }
 
