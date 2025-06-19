@@ -10,13 +10,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const client = await clientPromise;
     const db = client.db('secureShare');
-    console.log('finding file')
     const file = await db.collection('files').findOne({ _id: new ObjectId(params.id) });
-    console.log('after file found')
 
     if (!file) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
@@ -38,11 +36,13 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  console.log('delte request recieved')
   try {
     const client = await clientPromise;
     const db = client.db('secureShare');
     
+    console.log('file id is : ' , params.id)
     // 1. Find the file in MongoDB
     const file = await db.collection('files').findOne({ _id: new ObjectId(params.id) });
     
@@ -51,28 +51,48 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     }
 
     // 2. Extract public_id from Cloudinary URL
-    const urlParts = file.cloudinaryUrl.split('/');
-    const publicId = urlParts
-      .slice(urlParts.indexOf('upload') + 1)
-      .join('/')
-      .replace(/\.[^/.]+$/, ''); // Remove file extension
+    const url = new URL(file.cloudinaryUrl);
+    const pathParts = url.pathname.split('/');
+    console.log('path of the file on cloudinary is : ', pathParts)
+    const uploadIndex = pathParts.indexOf('upload');
+    const publicId = pathParts.slice(uploadIndex + 2).join('/').replace(/\.[^/.]+$/, '');
+
+    console.log('Attempting to delete from Cloudinary with public_id:', publicId);
 
     // 3. Delete from Cloudinary
     const cloudinaryResult = await cloudinary.uploader.destroy(publicId, {
-      resource_type: 'raw' // Important for non-image files
+      resource_type: 'raw',
+      invalidate: true
     });
 
+    console.log('Cloudinary deletion result:', cloudinaryResult);
+
     if (cloudinaryResult.result !== 'ok') {
-      throw new Error(`Cloudinary deletion failed: ${cloudinaryResult.result}`);
+      return NextResponse.json({ 
+        success: false, 
+        error: `Cloudinary deletion failed: ${cloudinaryResult.result}`,
+        details: {
+          publicIdUsed: publicId,
+          cloudinaryResponse: cloudinaryResult
+        }
+      }, { status: 400 });
     }
 
     // 4. Delete from MongoDB
-    await db.collection('files').deleteOne({ _id: new ObjectId(params.id) });
+    const deleteResult = await db.collection('files').deleteOne({ _id: new ObjectId(params.id) });
+
+    if (deleteResult.deletedCount === 0) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'MongoDB deletion failed - document not found'
+      }, { status: 404 });
+    }
 
     return NextResponse.json({ 
       success: true,
       message: 'File deleted successfully',
-      cloudinaryResult
+      cloudinaryResult,
+      mongoResult: deleteResult
     });
 
   } catch (error: any) {

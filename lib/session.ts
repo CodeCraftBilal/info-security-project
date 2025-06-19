@@ -2,6 +2,7 @@ import 'server-only'
 import { JWTPayload, SignJWT, jwtVerify } from 'jose'
 import { SessionPayload } from './definitions'
 import { cookies } from 'next/headers'
+import { Session } from 'inspector/promises'
 
  
 const secretKey = process.env.SESSION_SECRET
@@ -64,4 +65,14 @@ export async function updateSession() {
 export async function deleteSession() {
   const cookieStore = await cookies()
   cookieStore.delete('session')
+}
+
+export async function getSessionPayload() {
+  const cookieStore = await cookies(); // ✅ no await
+  const session = cookieStore.get('session')?.value;
+
+  if (!session) return null;
+
+  const payload = await decrypt(session);
+  return payload;
 }
