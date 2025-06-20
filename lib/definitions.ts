@@ -46,3 +46,12 @@ export type User = {
     userRole: string,
     userProfile: string
   }
+
+export type Session = {
+  userId: string,
+  email: string,
+  expiresAt: Date,
+  role: string,
+  iat: number,
+  exp: number
+}

@@ -5,7 +5,7 @@ export async function GET() {
   const session = await getSessionPayload()
 
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return null;
   }
   console.log('session is : ', session)
 

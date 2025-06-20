@@ -142,7 +142,6 @@ const Dashboard = (): React.JSX.Element => {
           userName: data?.session?.userId,
           userRole: data?.session?.role,
           userProfile: 'profile.png'
-        
       }
       setSession(ses);
       console.log('session dat is : ', data)
@@ -466,7 +465,7 @@ return (
         <div className="menu flex flex-col gap-3 p-2">
           <button onClick={() => setSideNav('My Files')} className={"bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white"}>My Files</button>
           <button onClick={() => setSideNav('Shared With Me')} className="bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white">Shared With Me</button>
-          <button className="bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white">Activity Logs</button>
+          {/* <button className="bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white">Activity Logs</button> */}
         </div>
 
         {/* Collaborator section with working scroll */}
@@ -496,7 +495,7 @@ return (
         </div>
         {/* flex flex-wrap gap-3 w-full h-[80%] overflow-auto */}
 
-        <div className="filescontainer flex flex-wrap gap-3 min-h-[85%] max-h-full overflow-auto">
+        <div className="filescontainer flex flex-wrap gap-3 min-h-0 max-h-full overflow-auto">
           {isLoading ? (
             <div>Loading files...</div>
           ) : filteredFiles?.length === 0 ? (
@@ -562,7 +561,7 @@ return (
           })}
           {filteredFiles?.length === 0 && (
             <div>
-              No fileFound matching your search
+              No files Found
             </div>
           )}
 
