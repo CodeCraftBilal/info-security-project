@@ -39,3 +39,10 @@ export type FormState =
   role?: string;
   expiresAt: Date;
 }
+
+export type User = {
+    userId: number,
+    userName: string,
+    userRole: string,
+    userProfile: string
+  }

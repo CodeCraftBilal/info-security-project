@@ -5,6 +5,7 @@ import { uploadFileAction } from '@/Action/uploadFileAction';
 import Link from 'next/link';
 import { CryptoService, KeyPair, EncryptedFile } from '@/lib/crypto';
 import { getKeyPairFromIndexedDB, generateAndStoreKeyPair, keyPairExists } from '@/lib/keyManagement';
+import { redirect } from 'next/navigation';
 
 const Dashboard = (): React.JSX.Element => {
 
@@ -30,33 +31,7 @@ const Dashboard = (): React.JSX.Element => {
     userProfile: string
   }
 
-  type Session = {
-    user: {
-      userId: string;
-      email: string;
-      role: string;
-      iat: number,
-      exp: number
-    };
-  };
-
-  const users: User[] = [
-    {
-      userId: 0,
-      userName: 'Bilal Khan',
-      userRole: 'admin',
-      userProfile: 'profile.png'
-    },
-    {
-      userId: 1,
-      userName: 'Rashid Khan',
-      userRole: 'Viewer',
-      userProfile: 'profile.png'
-    },
-  ]
-
   const [keyPair, setKeyPair] = useState<KeyPair | null>(null)
-  const [publicKeyStr, setPublicKeyStr] = useState<string>('')
   const [encryptedFiles, setencryptedFiles] = useState<EncryptedFileWithMetaData[]>([])
 
 
@@ -151,6 +126,7 @@ const Dashboard = (): React.JSX.Element => {
 
   const [sessionLoading, setSessionLoading] = useState(true);
   const [session, setSession] = useState<User | null>(null);
+
   // Update your useEffect for session
   useEffect(() => {
     const fetchSession = async () => {
@@ -271,6 +247,10 @@ const uploadFiles = async (files: File[]): Promise<void> => {
   if (!result) return;
   console.log('upload function is in working');
   const formData = new FormData();
+  // Add uploader information
+  if (session) {
+    formData.append('uploaderId', session.userId.toString());
+  }
 
   for (const file of result) {
     const encryptedBlob = new Blob([file.file], { type: file.fileType });
@@ -462,6 +442,10 @@ const deleteFile = async (fileId: string) => {
   }
 };
 
+const handleShare = () => {
+  redirect('/share')
+}
+
 return (
   <div className="bg-[#0b1338] h-screen p-2 flex flex-col">
     {/* Fixed: Corrected height class */}
@@ -475,8 +459,8 @@ return (
         <input type="file" name='fileupload' className='hidden' ref={fileInputRef} onChange={handleFileChange}
           accept='.pdf, .doc, .docx, .jpg, .png, .mp4' multiple />
         <button onClick={handleUploadClick} className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Upload File</button>
-        <button className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Encrypt & File</button>
-        <button className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Share File</button>
+        {/* <button className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Encrypt & File</button> */}
+        <button onClick={() => handleShare()} className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Share File</button>
       </div>
       <div>
 

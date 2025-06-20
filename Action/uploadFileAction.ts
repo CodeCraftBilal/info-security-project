@@ -6,6 +6,7 @@ export async function uploadFileAction(formData: FormData) {
     const files = formData.getAll('files');
     const keys = formData.getAll('encryptedKey');
     const ivs = formData.getAll('iv');
+    const uploaderId = formData.getAll('uploaderId')
 
     console.log('keys: ', keys)
 
@@ -69,7 +70,7 @@ export async function uploadFileAction(formData: FormData) {
                     encryptedAesKey: keyBuffer.toString('base64'),
                     mimeType: file.type,
                     iv: ivBuffer.toString('base64'),
-                    uploaderId: 'userId',
+                    uploaderId: uploaderId[i],
                     uploadDate: new Date()
                 });
             }

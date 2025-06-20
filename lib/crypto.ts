@@ -133,4 +133,38 @@ export class CryptoService {
 
     return new Uint8Array(decryptedData);
   }
+
+  static async importPublicKey(publicKeyStr: string): Promise<CryptoKey> {
+    // Convert the base64 string to ArrayBuffer
+    const binaryDer = this.base64ToArrayBuffer(publicKeyStr);
+    
+    return window.crypto.subtle.importKey(
+      'spki',
+      binaryDer,
+      {
+        name: 'RSA-OAEP',
+        hash: 'SHA-256'
+      },
+      true,
+      ['encrypt']
+    );
+  }
+
+  static base64ToArrayBuffer(base64: string): ArrayBuffer {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+
+  static arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
+    let binary = '';
+    const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
 }
