@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { CryptoService, KeyPair, EncryptedFile } from '@/lib/crypto';
 import { getKeyPairFromIndexedDB, generateAndStoreKeyPair, keyPairExists } from '@/lib/keyManagement';
 import { redirect } from 'next/navigation';
+import SharedWithMe from './SharedFIles';
+import { FileText, Download, Trash2, MoreVertical } from 'lucide-react';
 
 const Dashboard = (): React.JSX.Element => {
 
@@ -121,6 +123,7 @@ const Dashboard = (): React.JSX.Element => {
   const [isuploading, setIsuploading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const menuRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [sideNav, setSideNav] = useState<string>('My Files')
 
 
 
@@ -204,16 +207,25 @@ const getFilesDataFromServer = async () => {
   setIsLoading(true);
   try {
     console.log('get files request sent');
-    const response = await fetch('/api/getfiles');
+    const response = await fetch('/api/getfiles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({})
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch files');
+    }
+    
     const data: FileMetaData[] = await response.json();
     console.log('Received files:', data);
     setFilesToDisplay(data);
-    setFilteredFiles(data); // Update filtered files as well
+    setFilteredFiles(data);
   } catch (error) {
     console.error('Error fetching files:', error);
-    // Fallback to default data if there's an error
-    // setFilesToDisplay(fileMetaData);
-    // setFilteredFiles(fileMetaData);
+    alert('Failed to load files. Please try again.');
   } finally {
     setIsLoading(false);
   }
@@ -378,33 +390,6 @@ const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
   return bytes.buffer;
 };
 
-// Example function to get private key from IndexedDB
-// const getPrivateKeyFromIndexedDB = async (): Promise<CryptoKey | null> => {
-//   return new Promise((resolve) => {
-//     const request = indexedDB.open('KeyStore', 1);
-
-//     request.onsuccess = (event) => {
-//       const db = (event.target as IDBOpenDBRequest).result;
-//       const transaction = db.transaction('keys', 'readonly');
-//       const store = transaction.objectStore('keys');
-//       const getRequest = store.get('secureSharePrivateKey');
-
-//       getRequest.onsuccess = () => {
-//         resolve(getRequest.result || null);
-//       };
-
-//       getRequest.onerror = () => {
-//         console.error('Error getting private key from IndexedDB');
-//         resolve(null);
-//       };
-//     };
-
-//     request.onerror = () => {
-//       console.error('Error opening IndexedDB');
-//       resolve(null);
-//     };
-//   });
-// };
 
 const deleteFile = async (fileId: string) => {
   if (!confirm('Are you sure you want to permanently delete this file?')) return;
@@ -479,8 +464,8 @@ return (
       <div className="left w-[30%] h-full flex flex-col min-h-0">
         {/* Menu */}
         <div className="menu flex flex-col gap-3 p-2">
-          <button className="bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white">My Files</button>
-          <button className="bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white">Shared With Me</button>
+          <button onClick={() => setSideNav('My Files')} className={"bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white"}>My Files</button>
+          <button onClick={() => setSideNav('Shared With Me')} className="bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white">Shared With Me</button>
           <button className="bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white">Activity Logs</button>
         </div>
 
@@ -504,14 +489,14 @@ return (
 
       {/* Right Section */}
       <div className="right flex flex-col items-center gap-2 bg-blue-200 w-[70%] h-full rounded-2xl px-2">
+        { sideNav == 'My Files' && <div className='w-full h-full mx-4 flex flex-col gap-2'>
         <div className="search flex items-center gap-2 rounded-lg mt-4 p-1 bg-blue-300 mx-2 w-[90%]">
           <input onChange={(e) => handleChangeSearch(e)} type="search" className='w-[calc(100%-60px)] py-1 px-2 text-black out text-xl focus:outline-hidden' />
           <button><img className='' src="/search.png" width={35} height={35} alt="search" /></button>
         </div>
         {/* flex flex-wrap gap-3 w-full h-[80%] overflow-auto */}
 
-
-        <div className="filescontainer flex flex-wrap gap-3 min-h-0 max-h-full overflow-auto">
+        <div className="filescontainer flex flex-wrap gap-3 min-h-[85%] max-h-full overflow-auto">
           {isLoading ? (
             <div>Loading files...</div>
           ) : filteredFiles?.length === 0 ? (
@@ -538,25 +523,39 @@ return (
                     <span className="type">{file.type}</span>
                   </div>
                 </div>
-                <div className="menu absolute right-4 top-2">
-                  <img
-                    className='cursor-pointer'
-                    onClick={() =>
-                      setOpenMenuId(openMenuId === file.id ? null : file.id)
-                    }
-                    src="/menu_dots.png"
-                    alt="menu"
-                    width={20}
-                    height={30}
-                  />
-                  <ul
-                    className={`${openMenuId === file.id ? '' : 'hidden'
-                      } rounded-sm p-2 bg-gray-400 absolute right-0 z-10`}
+                
+                <div className="menu absolute right-2 top-2">
+                  <button
+                    onClick={() => setOpenMenuId(openMenuId === file.id? null : file.id)}
+                    className="p-1 hover:bg-gray-200 rounded"
                   >
-                    <li onClick={() => fetchAndDecryptFile((file.id).toString(), 'view')} className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>View</li>
-                    <li onClick={() => deleteFile((file.id).toString())} className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>Delete</li>
-                    <li onClick={() => fetchAndDecryptFile((file.id).toString(), 'download')} className='cursor-pointer hover:bg-gray-500 p-1 rounded-sm'>Download</li>
-                  </ul>
+                    <MoreVertical className="h-5 w-5" />
+                  </button>
+                  {openMenuId === file.id && (
+                    <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                      <button
+                        onClick={() => fetchAndDecryptFile((file.id).toString(), 'view')}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center"
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        View
+                      </button>
+                      <button
+                        onClick={() => fetchAndDecryptFile((file.id).toString(), 'download')}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center"
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Download
+                      </button>
+                      <button
+                        onClick={() => deleteFile((file.id).toString())}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center text-red-600"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -572,6 +571,9 @@ return (
           )}
 
         </div>
+      </div>}
+
+      {sideNav == 'Shared With Me' && <SharedWithMe/>}
       </div>
     </div>
   </div>

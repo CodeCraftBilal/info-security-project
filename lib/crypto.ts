@@ -97,8 +97,11 @@ export class CryptoService {
   try {
     // Verify the private key has unwrapKey usage
     if (!privateKey.usages.includes('unwrapKey')) {
+      console.log('usage')
       throw new Error('Private key does not have unwrapKey usage');
     }
+
+    console.log('hello')
 
     return await window.crypto.subtle.unwrapKey(
       "raw",
