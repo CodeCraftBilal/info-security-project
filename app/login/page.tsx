@@ -37,7 +37,7 @@ const Login = () => {
 
   return (
     <div className='bg-radial bg-bottom from-blue-800 to-black h-[86vh]'>
-      <form action={action} className='w-1/2 mt-20 flex flex-col gap-4 mx-auto p-10'>
+      <form action={action} className='w-1/2 mt-20 flex flex-col gap-4 mx-auto p-10 max-md:w-full'>
         <h1 className='text-4xl font-bold text-center'>Login</h1>
         {!state?.success && <p className='text-sm text-red-500 text-center'>{state?.message}</p>}
         <div className='flex flex-col gap-1'>

@@ -30,10 +30,10 @@ export default function Home() {
               Military-grade encryption for your files. Share with confidence knowing your data is protected with end-to-end encryption.
             </p>
             <div className="flex justify-center gap-4">
-              <button onClick={()=> redirect('/register')} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition duration-300">
+              <button onClick={()=> redirect('/register')} className="bg-indigo-600 cursor-pointer hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition duration-300">
                 Get Started - It's Free
               </button>
-              <button className="border border-indigo-600 text-white hover:text-indigo-600 hover:bg-indigo-50 font-medium py-3 px-6 rounded-lg transition duration-300">
+              <button className="border border-indigo-600 cursor-pointer text-white hover:text-indigo-600 hover:bg-indigo-50 font-medium py-3 px-6 rounded-lg transition duration-300">
                 Learn More
               </button>
             </div>

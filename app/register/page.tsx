@@ -63,7 +63,7 @@ const Register = () => {
 
   return (
     <div className='bg-radial bg-bottom from-blue-800 to-black h-[86vh]'>
-      <form action={action} className='w-1/2 my-10 flex flex-col gap-4 mx-auto p-10'>
+      <form action={action} className='w-1/2 my-10 flex flex-col gap-4 mx-auto p-10 max-md:w-full'>
         <h1 className='text-4xl font-bold text-center'>Sign up</h1>
 
         <div className='flex flex-col gap-1'>

@@ -25,16 +25,17 @@ const Header = () => {
     }, [])
 
     return (
-        <header className="py-6 px-4">
+        <header className="py-6 px-4 fixed top-0 w-full bg-[#180c35] h-18">
             <div className="container mx-auto flex justify-between items-center">
 
                 <Link href={'#'} className="flex items-center">
-                    <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center mr-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+                        <img src="/logo2.png" alt="secureShare" />
+                        {/* <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
+                        </svg> */}
                     </div>
-                    <span className="text-2xl font-bold text-gray-900">SecureShare</span>
+                    <span className="text-2xl font-bold text-gray-100">SecureShare</span>
                 </Link>
 
                 <nav className="hidden md:flex space-x-8">
@@ -45,7 +46,7 @@ const Header = () => {
                 </nav>
 
                 {session?.userId && <div className='flex gap-3 items-center cursor-pointer'>
-                    <label htmlFor="dash" className='text-black font-bold text-xl'>{session.userId}</label>
+                    <label htmlFor="dash" className='text-white font-bold text-xl'>{session.userId}</label>
                     <Link id='dash' href="/dashboard" className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
                         Dashboard
                     </Link>

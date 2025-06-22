@@ -6,10 +6,10 @@ const CTA = (): React.JSX.Element => {
         Join thousands of businesses and individuals who trust SecureShare for their confidential file transfers.
       </p>
       <div className="flex justify-center gap-4">
-        <button className="bg-white text-indigo-600 hover:bg-gray-100 font-medium py-3 px-6 rounded-lg transition duration-300">
+        <button onClick={() => {window.location.href= '/register'}} className="bg-white text-indigo-600 hover:bg-gray-100 cursor-pointer font-medium py-3 px-6 rounded-lg transition duration-300">
           Get Started for Free
         </button>
-        <button className="border border-white text-white hover:bg-indigo-700 font-medium py-3 px-6 rounded-lg transition duration-300">
+        <button className="border border-white cursor-pointer text-white hover:bg-indigo-700 font-medium py-3 px-6 rounded-lg transition duration-300">
           Contact Sales
         </button>
       </div>

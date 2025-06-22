@@ -460,9 +460,10 @@ return (
 
     {/* Corrected layout below */}
     <div className="bottom flex flex-1 min-h-0">
-      <div className="left w-[30%] h-full flex flex-col min-h-0">
+      <div className="left w-[30%] h-full flex flex-col min-h-0 relative">
         {/* Menu */}
-        <div className="menu flex flex-col gap-3 p-2">
+        <div className="humburger md:hidden absolute max-md:right-4">X</div>
+        <div className="menu flex flex-col gap-3 p-2 max-md:mt-5">
           <button onClick={() => setSideNav('My Files')} className={"bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white"}>My Files</button>
           <button onClick={() => setSideNav('Shared With Me')} className="bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white">Shared With Me</button>
           {/* <button className="bg-[#26305aec] cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white">Activity Logs</button> */}
