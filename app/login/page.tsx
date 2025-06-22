@@ -2,6 +2,7 @@
 import React, { useActionState, useEffect } from 'react'
 import { loginAction } from '@/Action/loginAction'
 import { generateAndStoreKeyPair, keyPairExists } from '@/lib/keyManagement'
+import Link from 'next/link'
 
 const Login = () => {
   const [state, action, isPending] = useActionState(loginAction, {
@@ -61,7 +62,8 @@ const Login = () => {
             />
         </div>
 
-        <div className='flex items-center'>
+        <div className='flex items-center flex-col gap-2'>
+          <Link className='hover:text-blue-400 text-white self-end' href={'/register'}>Don't have account?</Link>
           <button 
             disabled={isPending} 
             className='bg-blue-800 w-1/2 mx-auto text-center p-3 rounded-2xl hover:bg-blue-700 transition-colors disabled:opacity-50' 

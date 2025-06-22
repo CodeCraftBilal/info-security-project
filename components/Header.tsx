@@ -10,14 +10,14 @@ const Header = () => {
         const fetchSession = async () => {
             const res = await fetch('/api/session')
             const data = await res.json();
-            const ses: User = {
+            const ses: User | null = {
                 userId: data?.session?.userId,
                 userName: data?.session?.userId,
                 userRole: data?.session?.role,
                 userProfile: 'profile.png'
             }
-            if(ses != null)
-                setSession(ses)
+            
+            setSession(ses)
             console.log('session is : ', data)
         }
 
@@ -38,21 +38,21 @@ const Header = () => {
                 </Link>
 
                 <nav className="hidden md:flex space-x-8">
-                    <Link href="/features" className="text-gray-600 hover:text-indigo-600">Features</Link>
-                    <Link href="/security" className="text-gray-600 hover:text-indigo-600">Security</Link>
-                    <Link href="/pricing" className="text-gray-600 hover:text-indigo-600">Pricing</Link>
-                    <Link href="/about" className="text-gray-600 hover:text-indigo-600">About</Link>
+                    <Link href="/features" className="text-gray-200 hover:text-indigo-600">Features</Link>
+                    <Link href="/security" className="text-gray-200 hover:text-indigo-600">Security</Link>
+                    <Link href="/pricing" className="text-gray-200 hover:text-indigo-600">Pricing</Link>
+                    <Link href="/about" className="text-gray-200 hover:text-indigo-600">About</Link>
                 </nav>
 
-                {session && <div className='flex gap-3 items-center cursor-pointer'>
+                {session?.userId && <div className='flex gap-3 items-center cursor-pointer'>
                     <label htmlFor="dash" className='text-black font-bold text-xl'>{session.userId}</label>
                     <Link id='dash' href="/dashboard" className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300">
                         Dashboard
                     </Link>
                 </div>}
 
-                {session == null && <div className="flex items-center space-x-4">
-                    <Link href="/login" className="text-gray-600 hover:text-indigo-600 font-medium">
+                {(!session?.userId) && <div className="flex items-center space-x-4">
+                    <Link href="/login" className="text-gray-200 hover:text-indigo-600 font-medium">
                         Log in
                     </Link>
                     <Link href="/register" className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300">

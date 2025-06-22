@@ -7,7 +7,7 @@ export async function GET () {
 
     console.log('session deleted')
 
-    return NextResponse.redirect(new URL('/login', process.env.NEXT_PUBLIC_BASE_URL))
+    return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_BASE_URL))
 
     // return NextResponse({message: 'faild to logout', success: false});
     

@@ -5,7 +5,7 @@ export async function GET() {
   const session = await getSessionPayload()
 
   if (!session) {
-    return null;
+    return NextResponse.json(null);
   }
   console.log('session is : ', session)
 

@@ -112,7 +112,7 @@ const Dashboard = (): React.JSX.Element => {
   const logout = async () => {
     console.log('logout clicked')
     await fetch('/api/logout')
-    window.location.href = '/login'
+    window.location.href = '/'
   }
 
   const [search, setSearch] = useState<string | null>('')
