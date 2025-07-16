@@ -10,11 +10,22 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+function extractIdFromUrl(request: Request): string | null {
+  const url = new URL(request.url);
+  const parts = url.pathname.split('/');
+  const id = parts.at(-1);
+  return id || null;
+}
+
+export async function GET(request: Request) {
+  
+  const id = extractIdFromUrl(request);
+  if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+
   try {
     const client = await clientPromise;
     const db = client.db('secureShare');
-    const file = await db.collection('sharedFiles').findOne({ _id: new ObjectId(params.id) });
+    const file = await db.collection('sharedFiles').findOne({ _id: new ObjectId(id) });
 
     if (!file) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
