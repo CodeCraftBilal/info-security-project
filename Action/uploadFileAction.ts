@@ -7,7 +7,7 @@ export async function uploadFileAction(formData: FormData) {
     const keys = formData.getAll('encryptedKey');
     const ivs = formData.getAll('iv');
     const uploaderId = formData.getAll('uploaderId')
-
+    
     console.log('keys: ', keys)
 
     cloudinary.config({
