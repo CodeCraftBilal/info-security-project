@@ -131,12 +131,10 @@ function base64ToUint8Array(base64: string) {
       // 1. Get file metadata from API
       const response = await fetch(`/api/downloadShared/${fileId}`);
       const fileData = await response.json();
-      console.log('file data is : ', fileData)
   
       // 2. Retrieve private key from IndexedDB
       // const privateKey = await getPrivateKeyFromIndexedDB(); // Implement this function
       const privateKey = keyPair?.privateKey;
-      console.log('private key is: ', privateKey)
   
       if (!privateKey) {
         throw new Error('Private key not found in IndexedDB');
@@ -146,7 +144,6 @@ function base64ToUint8Array(base64: string) {
       const fileResponse = await fetch(fileData.url);
       const encryptedFileBuffer = await fileResponse.arrayBuffer();
       const encryptedFileArray = new Uint8Array(encryptedFileBuffer);
-      console.log('encrypted file is : ', encryptedFileArray);
   
       // 4. Prepare the encrypted AES key and IV
       const encryptedKey = base64ToArrayBuffer(fileData.encryptedKey);
@@ -154,9 +151,7 @@ function base64ToUint8Array(base64: string) {
       const iv = base64ToUint8Array(fileData.iv)
   
       // 5. Decrypt the AES key with RSA private key
-      console.log('start decrypting aes key');
       const aesKey = await CryptoService.decryptAesKey(encryptedKey, privateKey);
-      console.log('after decrypting aes key')
   
       // 6. Decrypt the file
       const decryptedData = await CryptoService.decryptFile(

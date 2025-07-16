@@ -7,8 +7,6 @@ import { redirect } from "next/navigation";
 import { stringify } from "querystring";
 export async function registerAction(state: FormState, formData: FormData) {
 
-  // console.log('form: ', formData);
-  console.log('registratrion started')
   // Validate form fields
   const validatedFields = SignupFormSchema.safeParse({
     username: formData.get('username'),
@@ -22,18 +20,14 @@ export async function registerAction(state: FormState, formData: FormData) {
 
   // If any form fields are invalid, return early
   if (!validatedFields.success) {
-    console.log('some error')
     return {
       errors: validatedFields.error.flatten().fieldErrors,
     }
   }
 
-  console.log('after validation')
-
   const { username, email, password, role } = validatedFields.data
   const hashedPassword = await bcrypt.hash(password, 10)
 
-  console.log('inserting in the db started')
   const client = await clientPromise;
   const db = client.db('secureShare');
 
@@ -42,10 +36,8 @@ export async function registerAction(state: FormState, formData: FormData) {
     email: email
   })
 
-  console.log('exiting user', existingUser)
 
   if (existingUser) {
-    console.log('user already exist')
     return;
   }
   await db.collection('users').insertOne({

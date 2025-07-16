@@ -2,10 +2,7 @@ import { deleteSession } from '@/lib/session'
 import { NextResponse } from 'next/server'
 
 export async function GET () {
-    console.log('logout request recieved')
     await deleteSession()
-
-    console.log('session deleted')
 
     return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_BASE_URL))
 

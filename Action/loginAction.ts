@@ -7,7 +7,6 @@ import bcrypt from 'bcrypt'
 
 export async function loginAction(state: any, formData: FormData) {
 
-    console.log('login requested')
     const email = formData.get('email')
     const passwrod = formData.get('password')
 
@@ -17,7 +16,6 @@ export async function loginAction(state: any, formData: FormData) {
     const user = await db.collection('users').findOne({ email: email?.toString() })
 
     if (!user) {
-        console.log('User does not exists');
         return { message: 'invalid username or passwrod', success: false }
     } 
     
@@ -25,7 +23,6 @@ export async function loginAction(state: any, formData: FormData) {
     const isMatch = await bcrypt.compare(passwrod?.toString(), user.password)
 
     if (!isMatch) {
-        console.log('Password does not Match');
         return { message: 'invalid username or passwrod', success: false }
     } 
 

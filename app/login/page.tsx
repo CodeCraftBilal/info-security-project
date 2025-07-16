@@ -19,9 +19,6 @@ const Login = () => {
           if (!exists) {
             // Generate and store new key pair
             await generateAndStoreKeyPair();
-            console.log('Key pair generated and stored successfully');
-          } else {
-            console.log('Key pair already exists');
           }
           
           // Redirect to dashboard or perform other actions

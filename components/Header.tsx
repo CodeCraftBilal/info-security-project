@@ -18,7 +18,6 @@ const Header = () => {
             }
             
             setSession(ses)
-            console.log('session is : ', data)
         }
 
         fetchSession();

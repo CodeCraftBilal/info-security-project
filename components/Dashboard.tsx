@@ -49,7 +49,6 @@ const Dashboard = (): React.JSX.Element => {
         setKeyPair(newKeyPair);
       } else {
         const pair = await getKeyPairFromIndexedDB();
-        console.log('pair initialized: ', pair)
         setKeyPair(pair);
       }
     };
@@ -64,28 +63,21 @@ const Dashboard = (): React.JSX.Element => {
       return;
     }
 
-    console.log('Encrypting files with key pair:', keyPair);
     const result: EncryptedFileWithMetaData[] = [];
 
     for (const file of files) {
       try {
-        console.log(`Processing file: ${file.name}`);
-
         // Generate AES key
         const aesKey = await CryptoService.generateAesKey();
-        console.log('AES key generated:', aesKey);
 
         // Encrypt the file
         const encryptedFile = await CryptoService.encryptFile(file, aesKey);
-        console.log('File encrypted, now encrypting AES key...');
 
         // Encrypt the AES key with RSA public key
         let encryptedAesKey: ArrayBuffer;
         try {
           encryptedAesKey = await CryptoService.encryptAesKey(aesKey, keyPair.publicKey);
-          console.log('AES key encrypted successfully');
         } catch (encryptError) {
-          console.error(`Failed to encrypt AES key for ${file.name}:`, encryptError);
           throw encryptError;
         }
 
@@ -96,9 +88,7 @@ const Dashboard = (): React.JSX.Element => {
           encryptedKey: encryptedAesKey
         });
 
-        console.log('File processed successfully:', file.name);
       } catch (error) {
-        console.error(`Error encrypting ${file.name}:`, error);
         // Continue with next file even if one fails
         continue;
       }
@@ -110,7 +100,6 @@ const Dashboard = (): React.JSX.Element => {
 
 
   const logout = async () => {
-    console.log('logout clicked')
     await fetch('/api/logout')
     window.location.href = '/'
   }
@@ -144,14 +133,10 @@ const Dashboard = (): React.JSX.Element => {
           userProfile: 'profile.png'
       }
       setSession(ses);
-      console.log('session dat is : ', data)
-      console.log('session data is : ', session)
     } catch (error) {
       console.error('Error fetching session:', error);
       // setSession();
     } finally {
-
-      console.log('session data is in finaly block : ', session)
       setSessionLoading(false);
     }
   };
@@ -205,7 +190,6 @@ useEffect(() => {
 const getFilesDataFromServer = async () => {
   setIsLoading(true);
   try {
-    console.log('get files request sent');
     const response = await fetch('/api/getfiles', {
       method: 'POST',
       headers: {
@@ -219,11 +203,9 @@ const getFilesDataFromServer = async () => {
     }
     
     const data: FileMetaData[] = await response.json();
-    console.log('Received files:', data);
     setFilesToDisplay(data);
     setFilteredFiles(data);
   } catch (error) {
-    console.error('Error fetching files:', error);
     alert('Failed to load files. Please try again.');
   } finally {
     setIsLoading(false);
@@ -237,15 +219,12 @@ useEffect(() => {
 // upload file feature
 
 const handleUploadClick = (): void => {
-  console.log('upload button clicked')
   fileInputRef.current?.click();
 }
 
 const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  console.log('upload button clicked and files are selected')
   if (e.target.files) {
     const files = Array.from(e.target.files);
-    console.log('files to upload are: ', files)
     setFilesToBeUploaded(files);
     await uploadFiles(files)
   }
@@ -256,7 +235,6 @@ const uploadFiles = async (files: File[]): Promise<void> => {
   setIsuploading(true);
   const result = await encryptFiles(files);
   if (!result) return;
-  console.log('upload function is in working');
   const formData = new FormData();
   // Add uploader information
   if (session) {
@@ -276,7 +254,6 @@ const uploadFiles = async (files: File[]): Promise<void> => {
   }
 
   const r = await uploadFileAction(formData);
-  console.log(r);
   setIsuploading(false);
 };
 
@@ -303,13 +280,10 @@ const fetchAndDecryptFile = async (fileId: string, action: 'view' | 'download') 
   try {
     // 1. Get file metadata from API
     const response = await fetch(`/api/files/${fileId}`);
-    const fileData = await response.json();
-    console.log('file data is : ', fileData)
+    const fileData = await response.json()
 
     // 2. Retrieve private key from IndexedDB
-    // const privateKey = await getPrivateKeyFromIndexedDB(); // Implement this function
     const privateKey = keyPair?.privateKey;
-    console.log('private key is: ', privateKey)
 
     if (!privateKey) {
       throw new Error('Private key not found in IndexedDB');
@@ -319,7 +293,6 @@ const fetchAndDecryptFile = async (fileId: string, action: 'view' | 'download') 
     const fileResponse = await fetch(fileData.url);
     const encryptedFileBuffer = await fileResponse.arrayBuffer();
     const encryptedFileArray = new Uint8Array(encryptedFileBuffer);
-    console.log('encrypted file is : ', encryptedFileArray);
 
     // 4. Prepare the encrypted AES key and IV
     const encryptedKey = base64ToArrayBuffer(fileData.encryptedKey);
@@ -327,16 +300,13 @@ const fetchAndDecryptFile = async (fileId: string, action: 'view' | 'download') 
     const iv = base64ToUint8Array(fileData.iv)
 
     // 5. Decrypt the AES key with RSA private key
-    console.log('start decrypting aes key');
     const aesKey = await CryptoService.decryptAesKey(encryptedKey, privateKey);
-    console.log('after decrypting aes key')
 
     // 6. Decrypt the file
     const decryptedData = await CryptoService.decryptFile(
       { file: encryptedFileArray, iv, encryptedKey },
       aesKey
     );
-
 
     // 7. Handle based on action
     if (action === 'view') {
@@ -345,8 +315,7 @@ const fetchAndDecryptFile = async (fileId: string, action: 'view' | 'download') 
       downloadDecryptedFile(decryptedData, fileData.type, fileData.name);
     }
   } catch (error) {
-    console.error('Error processing file:', error);
-    // alert(`Failed to ${action} file: ${error.message}`);
+    throw error;
   }
 };
 
@@ -496,11 +465,11 @@ return (
         </div>
         {/* flex flex-wrap gap-3 w-full h-[80%] overflow-auto */}
 
-        <div className="filescontainer flex flex-wrap gap-3 min-h-0 max-h-full overflow-auto">
+        <div className="filescontainer flex flex-wrap gap-3 min-h-0 max-h-full overflow-auto text-blue-600">
           {isLoading ? (
-            <div>Loading files...</div>
-          ) : filteredFiles?.length === 0 ? (
-            <div>No files found matching your search</div>
+            <div className='text-center'>Loading files...</div>
+          ) : !isLoading && filteredFiles?.length == 0 ? (
+            <div className='text-center'>No files found matching your search</div>
           ) : ''}
 
           {filteredFiles?.map((file) => {

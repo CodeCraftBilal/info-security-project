@@ -7,8 +7,6 @@ export async function uploadFileAction(formData: FormData) {
     const keys = formData.getAll('encryptedKey');
     const ivs = formData.getAll('iv');
     const uploaderId = formData.getAll('uploaderId')
-    
-    console.log('keys: ', keys)
 
     cloudinary.config({
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -36,7 +34,6 @@ export async function uploadFileAction(formData: FormData) {
                     throw new Error('Key is not a Blob');
                 }
                 const keyBuffer = Buffer.from(await keyEntry.arrayBuffer());
-                console.log('encrypted aes key length', keyBuffer.length);
 
                 // Process IV
                 const ivEntry = ivs[i];

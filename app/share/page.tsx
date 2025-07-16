@@ -68,7 +68,6 @@ const FileShareForm = () => {
         });
 
         const d = await res.json();
-        console.log('user is : ', d?.publicKey); // User created
 
 
         if (!res.ok) {
@@ -193,7 +192,6 @@ const FileShareForm = () => {
       }
 
       const data = await response.json();
-      console.log('recieved data after file upload is: ', data)
       setShareLink(`${window.location.origin}/download/${data.fileId}`);
     } catch (error) {
       console.error('Upload error:', error);

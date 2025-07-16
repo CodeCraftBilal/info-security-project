@@ -19,8 +19,6 @@ export const config = {
 };
 
 export async function POST(request: Request) {
-  console.log('Request to share file received');
-  
   try {
     const formData = await request.formData();
     
@@ -32,16 +30,6 @@ export async function POST(request: Request) {
     const iv = formData.get('iv') as File;
     const fileName = formData.get('fileName') as string;
     const fileType = formData.get('fileType') as string;
-
-    console.log('Received data:', {
-      recipientUsername,
-      senderUsername,
-      fileName,
-      fileType,
-      fileSize: file.size,
-      aesKeySize: encryptedAesKey.size,
-      ivSize: iv.size
-    });
 
     // Generate a unique file ID
     const fileId = uuidv4();

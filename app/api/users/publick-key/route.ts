@@ -2,7 +2,6 @@ import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  console.log('user public key request received');
 
   try {
     const body = await req.json(); // ✅ read POST body
@@ -26,7 +25,6 @@ export async function POST(req: Request) {
 }
 
 const getUserPublicKey = async (username: string) => {
-  console.log('Looking up public key for:', username);
 
   const client = await clientPromise;
   const db = client.db('secureShare');
@@ -34,12 +32,9 @@ const getUserPublicKey = async (username: string) => {
     $or: [{ userName: username }, { email: username }]
   });
 
-  console.log('user found: ', user)
-
   if (user && user.publicKey) {
     return user.publicKey;
   } else {
-    console.log('User not found or missing publicKey');
     return null;
   }
 }

@@ -7,7 +7,6 @@ export async function GET() {
   if (!session) {
     return NextResponse.json(null);
   }
-  console.log('session is : ', session)
 
   return NextResponse.json({ session })
 }

@@ -2,34 +2,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import { decrypt } from '@/lib/session'
 import { cookies } from 'next/headers'
 
-// 1. Specify protected and public routes
 const protectedRoutes = ['/dashboard', '/share']
 const publicRoutes = ['/login', '/register', '/']
  
 export default async function middleware(req: NextRequest) {
-  // 2. Check if the current route is protected or public
   const path = req.nextUrl.pathname
   const isProtectedRoute = protectedRoutes.includes(path)
   const isPublicRoute = publicRoutes.includes(path)
  
-  // 3. Decrypt the session from the cookie
+  // Get the cookie value
   const cookie = (await cookies()).get('session')?.value
-  const session = await decrypt(cookie)
+
+  let session = null
+  if (cookie) {
+    try {
+      session = await decrypt(cookie)
+    } catch (error) {
+      console.error('Failed to decrypt session:', error)
+      // Clear invalid cookie
+      const response = NextResponse.redirect(new URL('/login', req.nextUrl))
+      response.cookies.delete('session')
+      return response
+    }
+  }
  
-  // 4. Redirect to /login if the user is not authenticated
+  // Redirect to /login if the user is not authenticated
   if (isProtectedRoute && !session?.userId) {
     return NextResponse.redirect(new URL('/login', req.nextUrl))
   }
- 
-  // 5. Redirect to /dashboard if the user is authenticated
-  // if (
-  //   isPublicRoute &&
-  //   req.url.includes('/login') || req.url.includes('/register') &&
-  //   session?.userId &&
-  //   !req.nextUrl.pathname.startsWith('/dashboard')
-  // ) {
-  //   return NextResponse.redirect(new URL('/dashboard', req.nextUrl))
-  // }
  
   return NextResponse.next()
 }

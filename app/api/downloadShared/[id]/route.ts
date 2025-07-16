@@ -37,12 +37,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  console.log('delte request recieved')
   try {
     const client = await clientPromise;
     const db = client.db('secureShare');
     
-    console.log('file id is : ' , params.id)
     // 1. Find the file in MongoDB
     const file = await db.collection('files').findOne({ _id: new ObjectId(params.id) });
     
@@ -53,19 +51,14 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     // 2. Extract public_id from Cloudinary URL
     const url = new URL(file.cloudinaryUrl);
     const pathParts = url.pathname.split('/');
-    console.log('path of the file on cloudinary is : ', pathParts)
     const uploadIndex = pathParts.indexOf('upload');
     const publicId = pathParts.slice(uploadIndex + 2).join('/').replace(/\.[^/.]+$/, '');
-
-    console.log('Attempting to delete from Cloudinary with public_id:', publicId);
 
     // 3. Delete from Cloudinary
     const cloudinaryResult = await cloudinary.uploader.destroy(publicId, {
       resource_type: 'raw',
       invalidate: true
     });
-
-    console.log('Cloudinary deletion result:', cloudinaryResult);
 
     if (cloudinaryResult.result !== 'ok') {
       return NextResponse.json({ 
