@@ -17,9 +17,9 @@ function extractIdFromUrl(request: Request): string | null {
   return id || null;
 }
 
-export async function GET(request: Request) {
-  
-  const id = extractIdFromUrl(request);
+export async function GET(request: Request,
+  context: { params: { id: string } }) {
+  const id = context.params.id;
   if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
   try {
@@ -47,9 +47,11 @@ export async function GET(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: Request,
+  context: { params: { id: string } }) {
 
-  const id = extractIdFromUrl(request);
+    const id = context.params.id;
+
   if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
   try {
     const client = await clientPromise;
