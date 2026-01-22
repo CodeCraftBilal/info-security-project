@@ -18,8 +18,8 @@ function extractIdFromUrl(request: Request): string | null {
 }
 
 export async function GET(request: Request,
-  context: { params: { id: string } }) {
-  const id = context.params.id;
+  context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
   try {
@@ -48,9 +48,9 @@ export async function GET(request: Request,
 }
 
 export async function DELETE(request: Request,
-  context: { params: { id: string } }) {
+  context: { params: Promise<{ id: string }> }) {
 
-    const id = context.params.id;
+    const { id } = await context.params;
 
   if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
   try {

@@ -10,11 +10,12 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
     const client = await clientPromise;
     const db = client.db('secureShare');
-    const file = await db.collection('files').findOne({ _id: new ObjectId(params.id) });
+    const file = await db.collection('files').findOne({ _id: new ObjectId(id) });
 
     if (!file) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
@@ -36,13 +37,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   try {
     const client = await clientPromise;
     const db = client.db('secureShare');
     
     // 1. Find the file in MongoDB
-    const file = await db.collection('files').findOne({ _id: new ObjectId(params.id) });
+    const file = await db.collection('files').findOne({ _id: new ObjectId(id) });
     
     if (!file) {
       return NextResponse.json({ success: false, error: 'File not found' }, { status: 404 });
@@ -72,7 +74,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     // 4. Delete from MongoDB
-    const deleteResult = await db.collection('files').deleteOne({ _id: new ObjectId(params.id) });
+    const deleteResult = await db.collection('files').deleteOne({ _id: new ObjectId(id) });
 
     if (deleteResult.deletedCount === 0) {
       return NextResponse.json({ 

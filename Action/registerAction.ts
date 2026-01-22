@@ -4,9 +4,8 @@ import clientPromise from "@/lib/mongodb";
 import { createSession } from "@/lib/session";
 import bcrypt from 'bcrypt'
 import { redirect } from "next/navigation";
-import { stringify } from "querystring";
 export async function registerAction(state: FormState, formData: FormData) {
-
+  
   // Validate form fields
   const validatedFields = SignupFormSchema.safeParse({
     username: formData.get('username'),
