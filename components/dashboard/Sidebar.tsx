@@ -42,7 +42,7 @@ const Sidebar: React.FC = () => {
       {/* Sidebar Container */}
       <div 
         ref={sidebarRef}
-        className={`left w-[70%] sm:w-[50%] md:w-[30%] h-full flex flex-col min-h-0 relative
+        className={`left w-[70%] sm:w-[50%] md:w-[30%] h-full flex flex-col min-h-0
           bg-[#0b1338] md:bg-transparent
           transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0 absolute z-50 left-0 shadow-2xl' : '-translate-x-full absolute z-50 left-0'} 

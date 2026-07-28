@@ -68,7 +68,7 @@ export default function DashboardPage() {
   const totalPages = filteredFiles ? Math.ceil(filteredFiles.length / itemsPerPage) : 0;
 
   return (
-    <div className='w-full h-full mx-4 flex flex-col gap-2'>
+    <div className='w-full h-full px-4 flex flex-col gap-2'>
       <div className="search flex items-center gap-2 rounded-lg mt-4 p-1 bg-blue-300 mx-2 w-[90%]">
         <input 
           onChange={handleChangeSearch} 
