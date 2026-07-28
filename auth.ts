@@ -2,9 +2,16 @@ import NextAuth from 'next-auth';
 import { authConfig } from './auth.config';
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import clientPromise from '@/lib/mongodb';
+import Resend from "next-auth/providers/resend";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  providers: [
+    ...authConfig.providers,
+    Resend({
+      from: process.env.EMAIL_FROM,
+    }),
+  ],
   adapter: MongoDBAdapter(clientPromise, { databaseName: 'secureShare' }),
   session: { strategy: 'jwt' },
   callbacks: {
