@@ -13,22 +13,25 @@ const Sidebar: React.FC = () => {
     userRole: 'user', // default
   } : null;
 
+  const menuItems = [
+    { label: 'My Files', href: '/dashboard' },
+    { label: 'Shared With Me', href: '/dashboard/shared' },
+    { label: 'Share File', href: '/dashboard/share' },
+  ];
+
   return (
     <div className="left w-[30%] h-full flex flex-col min-h-0 relative">
       <div className="humburger md:hidden absolute max-md:right-4">X</div>
       <div className="menu flex flex-col gap-3 p-2 max-md:mt-5">
-        <Link 
-          href="/dashboard"
-          className={`${pathname === '/dashboard' ? 'bg-[#5968a3ec]' : 'bg-[#26305aec]'} cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white text-center block`}
-        >
-          My Files
-        </Link>
-        <Link 
-          href="/dashboard/shared"
-          className={`${pathname === '/dashboard/shared' ? 'bg-[#5968a3ec]' : 'bg-[#26305aec]'} cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white text-center block`}
-        >
-          Shared With Me
-        </Link>
+        {menuItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`${pathname === item.href ? 'bg-[#5968a3ec]' : 'bg-[#26305aec]'} cursor-pointer transition-all hover:bg-[#5968a3ec] p-3 rounded-2xl text-lg text-white text-center block`}
+          >
+            {item.label}
+          </Link>
+        ))}
       </div>
 
       <div className="collaborator flex flex-col gap-2 overflow-auto p-2 h-0 flex-grow justify-end">

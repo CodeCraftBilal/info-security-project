@@ -69,7 +69,7 @@ const Header: React.FC = () => {
   }
 
   const handleShare = () => {
-    router.push('/share');
+    router.push('/dashboard/share');
   }
 
   return (

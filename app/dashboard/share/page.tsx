@@ -202,8 +202,8 @@ const FileShareForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="w-full h-full flex items-center justify-center p-4 overflow-auto">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden my-auto">
         <div className="bg-indigo-600 p-6 text-white relative">
           <Link
             href="/dashboard"
@@ -318,27 +318,7 @@ const FileShareForm = () => {
           >
             {isUploading ? 'Sharing...' : 'Share File Securely'}
           </button>
-
-        {/*  {shareLink && (
-            <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-              <p className="text-sm font-medium text-green-800 mb-2">File shared successfully!</p>
-              <div className="flex">
-                <input
-                  type="text"
-                  value={shareLink}
-                  readOnly
-                  className="flex-1 text-black px-3 py-2 text-sm border border-green-300 rounded-l-lg focus:outline-none"
-                />
-                <button
-                  onClick={() => navigator.clipboard.writeText(shareLink)}
-                  className="px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-r-lg hover:bg-green-700"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
-          )}
-        */}
+          
           <div className="text-center">
             <Link
               href="/dashboard"
