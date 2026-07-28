@@ -13,6 +13,9 @@ export const authConfig = {
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
     })
   ],
+  pages: {
+    signIn: '/auth/signin',
+  },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
