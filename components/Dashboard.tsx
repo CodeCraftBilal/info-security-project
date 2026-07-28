@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { CryptoService, KeyPair, EncryptedFile } from '@/lib/crypto';
 import { getKeyPairFromIndexedDB, generateAndStoreKeyPair, keyPairExists } from '@/lib/keyManagement';
 import { redirect } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import SharedWithMe from './SharedFIles';
 import { FileText, Download, Trash2, MoreVertical } from 'lucide-react';
 
@@ -37,24 +38,69 @@ const Dashboard = (): React.JSX.Element => {
   const [encryptedFiles, setencryptedFiles] = useState<EncryptedFileWithMetaData[]>([])
 
 
+  const { data: authSession, status, update } = useSession();
+  const sessionLoading = status === 'loading';
+  const [isGeneratingKey, setIsGeneratingKey] = useState(false);
+
   useEffect(() => {
     const initializeKeys = async () => {
-      const exists = await keyPairExists();
-      if (!exists) {
-        // Option 1: Redirect to registration
-        // window.location.href = '/register';
+      if (status !== 'authenticated' || !authSession?.user) return;
 
-        // Option 2: Generate new keys
-        const newKeyPair = await generateAndStoreKeyPair();
-        setKeyPair(newKeyPair);
+      const exists = await keyPairExists();
+      // @ts-ignore
+      const hasPublicKey = authSession.user.hasPublicKey;
+
+      if (!exists) {
+        if (!hasPublicKey) {
+          setIsGeneratingKey(true);
+          try {
+            const newKeyPair = await generateAndStoreKeyPair();
+            setKeyPair(newKeyPair);
+            
+            // Upload public key to server
+            await fetch('/api/users/public-key', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ publicKey: newKeyPair.publicKey })
+            });
+
+            // Update session locally to reflect the change
+            await update({ hasPublicKey: true });
+          } catch (error) {
+            console.error('Failed to generate/upload key pair', error);
+          } finally {
+            setIsGeneratingKey(false);
+          }
+        } else {
+          // Edge case: user has a key on server but not locally (e.g. new device)
+          // For simplicity in this demo, we generate a new one if missing locally
+          const newKeyPair = await generateAndStoreKeyPair();
+          setKeyPair(newKeyPair);
+          
+          await fetch('/api/users/public-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ publicKey: newKeyPair.publicKey })
+          });
+        }
       } else {
         const pair = await getKeyPairFromIndexedDB();
         setKeyPair(pair);
+        
+        // Also ensure server has it if missing
+        if (!hasPublicKey && pair?.publicKey) {
+          await fetch('/api/users/public-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ publicKey: pair.publicKey })
+          });
+          await update({ hasPublicKey: true });
+        }
       }
     };
 
     initializeKeys();
-  }, []);
+  }, [status, authSession]);
 
 
   const encryptFiles = async (files: File[]) => {
@@ -100,8 +146,7 @@ const Dashboard = (): React.JSX.Element => {
 
 
   const logout = async () => {
-    await fetch('/api/logout')
-    window.location.href = '/'
+    await signOut({ callbackUrl: '/' });
   }
 
   const [search, setSearch] = useState<string | null>('')
@@ -116,33 +161,13 @@ const Dashboard = (): React.JSX.Element => {
 
 
 
-  const [sessionLoading, setSessionLoading] = useState(true);
-  const [session, setSession] = useState<User | null>(null);
-
-  // Update your useEffect for session
-  useEffect(() => {
-    const fetchSession = async () => {
-      setSessionLoading(true);
-      try {
-        const res = await fetch('/api/session');
-        const data = await res.json();
-        const ses: User = {
-          userId: data?.session?.userId,
-          userName: data?.session?.userId,
-          userRole: data?.session?.role,
-          userProfile: 'profile.png'
-      }
-      setSession(ses);
-    } catch (error) {
-      console.error('Error fetching session:', error);
-      // setSession();
-    } finally {
-      setSessionLoading(false);
-    }
-  };
-
-  fetchSession();
-}, []);
+  // We are now using NextAuth's useSession
+  const session = authSession ? {
+    userId: authSession.user?.id as unknown as number,
+    userName: authSession.user?.name || authSession.user?.email || '',
+    userRole: 'user', // default
+    userProfile: authSession.user?.image || 'profile.png'
+  } : null;
 
 
 // search feature
@@ -411,7 +436,7 @@ return (
       <div className="actionbtns flex gap-3">
         <input type="file" name='fileupload' className='hidden' ref={fileInputRef} onChange={handleFileChange}
           accept='.pdf, .doc, .docx, .jpg, .png, .mp4' multiple />
-        <button onClick={handleUploadClick} className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Upload File</button>
+        <button onClick={handleUploadClick} disabled={isGeneratingKey} className="bg-blue-300 disabled:opacity-50 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">{isGeneratingKey ? 'Generating Keys...' : 'Upload File'}</button>
         {/* <button className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Encrypt & File</button> */}
         <button onClick={() => handleShare()} className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold">Share File</button>
       </div>

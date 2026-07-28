@@ -12,11 +12,7 @@ cloudinary.config({
   secure: true
 });
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+
 
 export async function POST(request: Request) {
   try {

@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { getSessionPayload } from '@/lib/session';
+import { auth } from '@/auth';
 
 export async function POST(req: Request) {
   try {
     // Get session from server
-    const session = await getSessionPayload();
+    const session = await auth();
     
-    if (!session?.userId) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     
     // Query files for the current user
     const files = await db.collection('files')
-      .find({ uploaderId: session.userId })
+      .find({ uploaderId: session.user.id })
       .toArray();
 
     // Format response
