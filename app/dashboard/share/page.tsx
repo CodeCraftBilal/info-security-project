@@ -204,19 +204,6 @@ const FileShareForm = () => {
   return (
     <div className="w-full h-full flex items-center justify-center p-4 overflow-auto">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden my-auto">
-        <div className="bg-indigo-600 p-6 text-white relative">
-          <Link
-            href="/dashboard"
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 text-indigo-200 hover:text-white transition-colors"
-            title="Return to Dashboard"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </Link>
-          <h2 className="text-2xl font-bold text-center">Secure File Sharing</h2>
-          <p className="text-indigo-100 text-center">Send files with end-to-end encryption</p>
-        </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {error && (
@@ -319,17 +306,6 @@ const FileShareForm = () => {
             {isUploading ? 'Sharing...' : 'Share File Securely'}
           </button>
           
-          <div className="text-center">
-            <Link
-              href="/dashboard"
-              className="text-indigo-600 hover:text-indigo-800 text-sm font-medium inline-flex items-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Return to Dashboard
-            </Link>
-          </div>
         </form>
       </div>
     </div>

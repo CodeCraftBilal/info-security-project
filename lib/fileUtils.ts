@@ -84,6 +84,37 @@ export const fetchAndDecryptFile = async (fileId: string, action: 'view' | 'down
   }
 };
 
+export const getDecryptedFileBlob = async (fileId: string, keyPair: KeyPair | null): Promise<Blob> => {
+  try {
+    const response = await fetch(`/api/files/${fileId}`);
+    const fileData = await response.json();
+
+    const privateKey = keyPair?.privateKey;
+
+    if (!privateKey) {
+      throw new Error('Private key not found');
+    }
+
+    const fileResponse = await fetch(fileData.url);
+    const encryptedFileBuffer = await fileResponse.arrayBuffer();
+    const encryptedFileArray = new Uint8Array(encryptedFileBuffer);
+
+    const encryptedKey = base64ToArrayBuffer(fileData.encryptedKey);
+    const iv = base64ToUint8Array(fileData.iv);
+
+    const aesKey = await CryptoService.decryptAesKey(encryptedKey, privateKey);
+
+    const decryptedData = await CryptoService.decryptFile(
+      { file: encryptedFileArray, iv, encryptedKey },
+      aesKey
+    );
+
+    return new Blob([decryptedData], { type: fileData.type });
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const deleteFileAction = async (fileId: string): Promise<boolean> => {
   if (!confirm('Are you sure you want to permanently delete this file?')) return false;
 
