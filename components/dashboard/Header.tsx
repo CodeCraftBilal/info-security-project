@@ -6,6 +6,8 @@ import { signOut, useSession } from 'next-auth/react';
 import { uploadFileAction } from '@/Action/uploadFileAction';
 import { encryptFiles } from '@/lib/fileUtils';
 import { useKeyPair } from '@/hooks/useKeyPair';
+import { Menu } from 'lucide-react';
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 const Header: React.FC = () => {
   const router = useRouter();
@@ -13,6 +15,12 @@ const Header: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const { keyPair, isGeneratingKey } = useKeyPair();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(menuRef, () => {
+    if (isMenuOpen) setIsMenuOpen(false);
+  });
 
   const session = authSession ? {
     userId: authSession.user?.id as unknown as number,
@@ -73,13 +81,13 @@ const Header: React.FC = () => {
   }
 
   return (
-    <div className="topbar p-2 flex items-center justify-between h-[60px]">
-      <Link className='logo gap-0 flex items-center cursor-pointer' href={'http://localhost:3000/'}>
-        <img src="/logo.png" alt="logo" width={100} height={100} />
-        <span className="text-white font-bold text-2xl">SecureShare</span>
+    <div className="topbar p-2 flex items-center justify-between h-[60px] relative">
+      <Link className='logo gap-0 flex items-center cursor-pointer' href={'/'}>
+        <img src="/logo.png" alt="logo" className="w-[60px] h-[60px] md:w-[100px] md:h-[100px]" />
+        <span className="text-white font-bold text-2xl hidden md:block">SecureShare</span>
       </Link>
 
-      <div className="actionbtns flex gap-3">
+      <div className="hidden md:flex actionbtns gap-3 items-center">
         <input 
           type="file" 
           name='fileupload' 
@@ -92,26 +100,66 @@ const Header: React.FC = () => {
         <button 
           onClick={handleUploadClick} 
           disabled={isGeneratingKey || isUploading} 
-          className="bg-blue-300 disabled:opacity-50 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold"
+          className="bg-blue-300 disabled:opacity-50 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold h-fit"
         >
           {isGeneratingKey ? 'Generating Keys...' : isUploading ? 'Uploading...' : 'Upload File'}
         </button>
         <button 
           onClick={handleShare} 
-          className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold"
+          className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold h-fit"
         >
           Share File
         </button>
+        <button
+          className='bg-blue-300 p-2 rounded-xl text-black font-bold hover:bg-blue-400 hover:cursor-pointer h-fit'
+          onClick={logout}
+        >
+          Logout
+        </button>
       </div>
-      <div>
-        <div className="toggle flex gap-2 text-lg">
-          <button
-            className='bg-blue-300 p-2 rounded-xl text-black font-bold hover:bg-blue-400 hover:cursor-pointer'
-            onClick={logout}
-          >
-            Logout
-          </button>
-        </div>
+
+      {/* Mobile Menu Toggle */}
+      <div className="md:hidden flex items-center" ref={menuRef}>
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="text-white p-2"
+        >
+          <Menu size={28} />
+        </button>
+
+        {/* Mobile Dropdown Menu */}
+        {isMenuOpen && (
+          <div className="absolute right-2 top-[60px] bg-[#26305aec] p-4 rounded-xl shadow-xl flex flex-col gap-3 z-50 border border-blue-400/20">
+            <input 
+              type="file" 
+              name='fileupload' 
+              className='hidden' 
+              ref={fileInputRef} 
+              onChange={handleFileChange}
+              accept='.pdf, .doc, .docx, .jpg, .png, .mp4' 
+              multiple 
+            />
+            <button 
+              onClick={handleUploadClick} 
+              disabled={isGeneratingKey || isUploading} 
+              className="bg-blue-300 disabled:opacity-50 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold w-full"
+            >
+              {isGeneratingKey ? 'Generating...' : isUploading ? 'Uploading...' : 'Upload File'}
+            </button>
+            <button 
+              onClick={() => { handleShare(); setIsMenuOpen(false); }} 
+              className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold w-full"
+            >
+              Share File
+            </button>
+            <button
+              className='bg-blue-300 p-2 rounded-xl text-black font-bold hover:bg-blue-400 hover:cursor-pointer w-full'
+              onClick={() => { logout(); setIsMenuOpen(false); }}
+            >
+              Logout
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -85,7 +85,7 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
   };
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-200">
+    <div className="group relative flex flex-col bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-200 w-full min-w-[200px]">
       
       {/* Thumbnail Area */}
       <div className="relative w-full h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
