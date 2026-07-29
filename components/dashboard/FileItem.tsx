@@ -3,6 +3,7 @@ import { FileText, Image as ImageIcon, File } from 'lucide-react';
 import { KeyPair } from '@/lib/crypto';
 import { fetchAndDecryptFile, deleteFileAction, getDecryptedFileBlob } from '@/lib/fileUtils';
 import FileItemMenu from './FileItemMenu';
+import ImagePreviewModal from './ImagePreviewModal';
 
 export type FileMetaData = {
   id: number;
@@ -24,6 +25,7 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [thumbnailError, setThumbnailError] = useState<string | null>(null);
   const [isDecrypting, setIsDecrypting] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -80,7 +82,10 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
       
       <div className="flex flex-col bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-200 h-full w-full">
         {/* Thumbnail Area */}
-        <div className="relative w-full h-32 sm:h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
+        <div 
+          className={`relative w-full h-32 sm:h-48 bg-gray-50 flex items-center justify-center overflow-hidden ${file.type.startsWith('image/') ? 'cursor-pointer hover:opacity-90' : ''}`}
+          onClick={() => { if (file.type.startsWith('image/')) setIsPreviewOpen(true); }}
+        >
           {file.type.startsWith('image/') ? (
              thumbnailUrl ? (
                <img src={thumbnailUrl} alt={file.name} className="object-cover w-full h-full" />
@@ -109,6 +114,17 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
            <div className="text-[8px] sm:text-[10px] text-gray-400 mt-1">{file.uploadedAt}</div>
         </div>
       </div>
+
+      {isPreviewOpen && thumbnailUrl && (
+        <ImagePreviewModal
+          file={file}
+          imageUrl={thumbnailUrl}
+          onClose={() => setIsPreviewOpen(false)}
+          onAction={handleAction}
+          onDelete={handleDelete}
+          onToggleDetails={() => setShowDetails(!showDetails)}
+        />
+      )}
     </div>
   );
 };
