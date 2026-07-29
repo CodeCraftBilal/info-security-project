@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { KeyPair } from '@/lib/crypto';
-import { getKeyPairFromIndexedDB, generateAndStoreKeyPair, keyPairExists } from '@/lib/keyManagement';
+import { getKeyPairFromIndexedDB, generateAndStoreKeyPair, keyPairExists, exportPublicKeyAsBase64 } from '@/lib/keyManagement';
 
 interface KeyContextType {
   keyPair: KeyPair | null;
@@ -34,10 +34,11 @@ export const KeyProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             console.log('Generated new key pair:', newKeyPair);
             
             // Upload public key to server
+            const exportedPublicKey = await exportPublicKeyAsBase64(newKeyPair.publicKey);
             const res = await fetch('/api/users/public-key', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ publicKey: newKeyPair.publicKey })
+              body: JSON.stringify({ publicKey: exportedPublicKey })
             });
 
             if (!res.ok) {
@@ -57,10 +58,11 @@ export const KeyProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const newKeyPair = await generateAndStoreKeyPair();
           setKeyPair(newKeyPair);
           
+          const exportedPublicKey = await exportPublicKeyAsBase64(newKeyPair.publicKey);
           await fetch('/api/users/public-key', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ publicKey: newKeyPair.publicKey })
+            body: JSON.stringify({ publicKey: exportedPublicKey })
           });
         }
       } else {
@@ -68,10 +70,11 @@ export const KeyProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setKeyPair(pair);
         
         if (!hasPublicKey && pair?.publicKey) {
+          const exportedPublicKey = await exportPublicKeyAsBase64(pair.publicKey);
           await fetch('/api/users/public-key', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ publicKey: pair.publicKey })
+            body: JSON.stringify({ publicKey: exportedPublicKey })
           });
           await update({ hasPublicKey: true });
         }
