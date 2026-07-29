@@ -85,25 +85,25 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
   };
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-200 w-full min-w-[200px]">
+    <div className="group relative flex flex-col bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-200 w-full min-w-0 sm:min-w-[200px]">
       
       {/* Thumbnail Area */}
-      <div className="relative w-full h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
+      <div className="relative w-full h-32 sm:h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
         {file.type.startsWith('image/') ? (
            thumbnailUrl ? (
              <img src={thumbnailUrl} alt={file.name} className="object-cover w-full h-full" />
            ) : thumbnailError ? (
              <div className="text-red-500 text-xs text-center p-2 flex flex-col items-center">
-               <File className="w-8 h-8 mb-1 opacity-50 text-red-400" />
+               <File className="w-6 h-6 sm:w-8 sm:h-8 mb-1 opacity-50 text-red-400" />
                <span className="max-w-[120px] leading-tight">{thumbnailError}</span>
              </div>
            ) : isDecrypting ? (
-             <div className="text-gray-400 text-sm animate-pulse">Decrypting preview...</div>
+             <div className="text-gray-400 text-xs sm:text-sm animate-pulse">Decrypting...</div>
            ) : (
-             <ImageIcon className="w-12 h-12 text-gray-300" />
+             <ImageIcon className="w-8 h-8 sm:w-12 sm:h-12 text-gray-300" />
            )
         ) : (
-           <FileText className="w-16 h-16 text-gray-300" />
+           <FileText className="w-10 h-10 sm:w-16 sm:h-16 text-gray-300" />
         )}
 
         {/* 3-dot Menu Button */}
@@ -113,9 +113,9 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
         >
            <button 
              onClick={() => setIsOpen(!isOpen)} 
-             className="p-1.5 bg-white hover:bg-gray-100 rounded-full shadow-sm text-gray-700"
+             className="p-1 sm:p-1.5 bg-white hover:bg-gray-100 rounded-full shadow-sm text-gray-700"
            >
-             <MoreVertical className="h-5 w-5" />
+             <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
            </button>
            
            {isOpen && (
@@ -157,13 +157,13 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
       </div>
 
       {/* Details Area */}
-      <div className={`flex flex-col p-3 ${!showDetails ? 'hidden md:flex' : 'flex'}`}>
-         <div className="font-semibold text-sm truncate" title={file.name}>{file.name}</div>
-         <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
+      <div className={`flex flex-col p-2 sm:p-3 ${!showDetails ? 'hidden md:flex' : 'flex'}`}>
+         <div className="font-semibold text-xs sm:text-sm truncate" title={file.name}>{file.name}</div>
+         <div className="flex justify-between items-center text-[10px] sm:text-xs text-gray-500 mt-1 sm:mt-2">
             <span className="truncate max-w-[60%]">{file.type}</span>
             <span>{file.size}</span>
          </div>
-         <div className="text-[10px] text-gray-400 mt-1">{file.uploadedAt}</div>
+         <div className="text-[8px] sm:text-[10px] text-gray-400 mt-1">{file.uploadedAt}</div>
       </div>
     </div>
   );

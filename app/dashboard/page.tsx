@@ -83,7 +83,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto">
-        <div className="filescontainer grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-6 p-2 text-blue-600">
+        <div className="filescontainer grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-6 p-2 text-blue-600">
           {isLoading ? (
             <div className='col-span-full text-center'>Loading files...</div>
           ) : !isLoading && filteredFiles?.length === 0 ? (
