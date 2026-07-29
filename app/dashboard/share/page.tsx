@@ -56,15 +56,11 @@ const FileShareForm = () => {
 
       try {
         setError(null);
-        const res = await fetch('/api/users/publick-key', {
-          method: 'POST',
+        const res = await fetch(`/api/users/public-key?username=${encodeURIComponent(username)}`, {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            userName: username,
-            email: username
-          })
+          }
         });
 
         const d = await res.json();

@@ -30,13 +30,21 @@ export const KeyProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           try {
             const newKeyPair = await generateAndStoreKeyPair();
             setKeyPair(newKeyPair);
+
+            console.log('Generated new key pair:', newKeyPair);
             
             // Upload public key to server
-            await fetch('/api/users/public-key', {
+            const res = await fetch('/api/users/public-key', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ publicKey: newKeyPair.publicKey })
             });
+
+            if (!res.ok) {
+              throw new Error('Failed to upload public key');
+            }
+
+            console.log('Public key uploaded successfully');
 
             // Update session locally to reflect the change
             await update({ hasPublicKey: true });

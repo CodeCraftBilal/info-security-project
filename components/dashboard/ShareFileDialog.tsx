@@ -41,10 +41,9 @@ const ShareFileDialog: React.FC<ShareFileDialogProps> = ({ file, keyPair, isOpen
     setIsSharing(true);
     try {
       // 1. Fetch recipient's public key
-      const pubKeyRes = await fetch('/api/users/publick-key', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: recipient })
+      const pubKeyRes = await fetch(`/api/users/public-key?username=${encodeURIComponent(recipient)}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
       });
       
       const pubKeyData = await pubKeyRes.json();
