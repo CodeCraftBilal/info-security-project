@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       encryptedAesKey: encryptedAesKeyBase64,
       iv: ivBase64,
       createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
       downloadCount: 0
     };
 

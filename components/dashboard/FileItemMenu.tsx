@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreVertical, FileText, Download, Trash2, Info } from 'lucide-react';
+import { MoreVertical, FileText, Download, Trash2, Info, Share2 } from 'lucide-react';
 
 interface FileItemMenuProps {
   showDetails: boolean;
   onToggleDetails: () => void;
-  onAction: (action: 'view' | 'download') => void;
+  onAction: (action: 'view' | 'download' | 'share') => void;
   onDelete: () => void;
 }
 
@@ -66,6 +66,13 @@ const FileItemMenu: React.FC<FileItemMenuProps> = ({
              >
                <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                Download
+             </button>
+             <button
+               onClick={() => { onAction('share'); setIsOpen(false); }}
+               className="w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm hover:bg-gray-100 flex items-center"
+             >
+               <Share2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+               Share
              </button>
              <button
                onClick={() => { onDelete(); setIsOpen(false); }}

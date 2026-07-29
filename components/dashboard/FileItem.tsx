@@ -4,6 +4,7 @@ import { KeyPair } from '@/lib/crypto';
 import { fetchAndDecryptFile, deleteFileAction, getDecryptedFileBlob } from '@/lib/fileUtils';
 import FileItemMenu from './FileItemMenu';
 import ImagePreviewModal from './ImagePreviewModal';
+import ShareFileDialog from './ShareFileDialog';
 
 export type FileMetaData = {
   id: number;
@@ -26,6 +27,7 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
   const [thumbnailError, setThumbnailError] = useState<string | null>(null);
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -56,7 +58,12 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
     };
   }, [file.id, file.type, keyPair]);
 
-  const handleAction = async (action: 'view' | 'download') => {
+  const handleAction = async (action: 'view' | 'download' | 'share') => {
+    if (action === 'share') {
+      setIsShareOpen(true);
+      return;
+    }
+    
     try {
       await fetchAndDecryptFile(file.id.toString(), action, keyPair);
     } catch (error: any) {
@@ -122,9 +129,15 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
           onClose={() => setIsPreviewOpen(false)}
           onAction={handleAction}
           onDelete={handleDelete}
-          onToggleDetails={() => setShowDetails(!showDetails)}
         />
       )}
+
+      <ShareFileDialog
+        file={file}
+        keyPair={keyPair}
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+      />
     </div>
   );
 };
