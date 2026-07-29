@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FileText, Download, Trash2, MoreVertical } from 'lucide-react';
 import { CryptoService } from '@/lib/crypto';
 import { getKeyPairFromIndexedDB } from '@/lib/keyManagement';
+import { useSession } from 'next-auth/react';
 
 interface SharedFile {
   _id: string;
@@ -28,6 +29,7 @@ interface User {
 const SharedWithMe = () => {
   const [files, setFiles] = useState<SharedFile[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: authSession } = useSession();
   const [session, setSession] = useState<User | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [keyPair, setKeyPair] = useState<any>(null);
@@ -37,20 +39,18 @@ const SharedWithMe = () => {
     menuRefs.current[id] = el;
   };
 
-  // Fetch session and key pair
+  // Set session from NextAuth and fetch key pair
   useEffect(() => {
     const initialize = async () => {
       try {
-        // Get session
-        const res = await fetch('/api/session');
-        const data = await res.json();
-        const ses: User = {
-          userId: data?.session?.userId,
-          userName: data?.session?.userId,
-          userRole: data?.session?.role,
-          userProfile: 'profile.png'
-        };
-        setSession(ses);
+        if (authSession?.user) {
+          setSession({
+            userId: (authSession.user as any).id || '',
+            userName: authSession.user.email || authSession.user.name || '',
+            userRole: (authSession.user as any).role || 'user',
+            userProfile: authSession.user.image || 'profile.png'
+          });
+        }
 
         // Get key pair
         const pair = await getKeyPairFromIndexedDB();
@@ -61,7 +61,7 @@ const SharedWithMe = () => {
     };
 
     initialize();
-  }, []);
+  }, [authSession]);
 
   // Fetch shared files when session is available
   useEffect(() => {
@@ -82,6 +82,7 @@ const SharedWithMe = () => {
         alert('Failed to load shared files. Please try again later.');
       } finally {
         setLoading(false);
+        console.log('Shared files fetch completed. Current files:', files);
       }
     };
 

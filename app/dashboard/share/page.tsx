@@ -3,7 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { CryptoService } from '@/lib/crypto';
 import { getKeyPairFromIndexedDB } from '@/lib/keyManagement';
 import Link from 'next/link';
-import { User } from '@/lib/definitions'
+import { User } from '@/lib/definitions';
+import { useSession } from 'next-auth/react';
 
 const FileShareForm = () => {
   const [username, setUsername] = useState('');
@@ -18,31 +19,19 @@ const FileShareForm = () => {
   const [receiverPublicKey, setReceiverPublicKey] = useState<CryptoKey | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [sessionLoading, setSessionLoading] = useState(true);
+  const { data: authSession } = useSession();
   const [session, setSession] = useState<User | null>(null);
 
   useEffect(() => {
-    const fetchSession = async () => {
-      setSessionLoading(true);
-      try {
-        const res = await fetch('/api/session');
-        const data = await res.json();
-        const ses: User = {
-          userId: data?.session?.userId,
-          userName: data?.session?.userId,
-          userRole: data?.session?.role,
-          userProfile: 'profile.png'
-        }
-        setSession(ses);
-      } catch (error) {
-        console.error('Error fetching session:', error);
-      } finally {
-        setSessionLoading(false);
-      }
-    };
-
-    fetchSession();
-  }, []);
+    if (authSession?.user) {
+      setSession({
+        userId: (authSession.user as any).id || '',
+        userName: authSession.user.email || authSession.user.name || '',
+        userRole: (authSession.user as any).role || 'user',
+        userProfile: authSession.user.image || 'profile.png'
+      });
+    }
+  }, [authSession]);
 
   // Get receiver's public key when username changes
   useEffect(() => {
