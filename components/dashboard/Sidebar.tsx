@@ -17,7 +17,10 @@ const Sidebar: React.FC = () => {
   });
   
   const session = authSession ? {
-    userId: authSession.user?.id as unknown as number,
+    userId: authSession.user?.id as unknown as string,
+    userName: authSession.user?.name || 'Unknown User',
+    userEmail: authSession.user?.email || 'No email',
+    userImage: authSession.user?.image || '/colImg.gif',
     userRole: 'user', // default
   } : null;
 
@@ -72,11 +75,17 @@ const Sidebar: React.FC = () => {
         <div className="collaborator flex flex-col gap-2 overflow-auto p-2 h-0 flex-grow justify-end">
           <div className="container bg-[#26305aec] flex items-center p-3 rounded-2xl text-lg text-white">
             <div className="image mr-3">
-              <img src="/colImg.gif" alt="collaborator" width={60} height={60} />
+              <img 
+                src={session?.userImage || "/colImg.gif"} 
+                alt="collaborator" 
+                width={60} 
+                height={60} 
+                className="rounded-full object-cover w-[60px] h-[60px]"
+              />
             </div>
-            <div className="description flex flex-col">
-              <span>{session?.userId}</span>
-              <span>{session?.userRole}</span>
+            <div className="description flex flex-col overflow-hidden">
+              <span className="font-semibold truncate" title={session?.userName}>{session?.userName}</span>
+              <span className="text-sm text-gray-300 truncate" title={session?.userEmail}>{session?.userEmail}</span>
             </div>
           </div>
         </div>
