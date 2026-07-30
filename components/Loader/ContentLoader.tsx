@@ -13,7 +13,7 @@ const ContentLoader: React.FC<ContentLoaderProps> = ({
   columns = 3
 }) => {
   const renderGridLoader = () => (
-    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${columns} gap-6`}>
+    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-${columns} gap-3 md:gap-6`}>
       {[...Array(count)].map((_, index) => (
         <SkeletonCard key={index} variant="product" className='' />
       ))}
@@ -25,11 +25,11 @@ const ContentLoader: React.FC<ContentLoaderProps> = ({
       {[...Array(count)].map((_, index) => (
         <div
           key={index}
-          className="bg-white rounded-2xl p-6 shadow-sm border border-green-100 animate-pulse"
+          className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-green-100 animate-pulse"
         >
-          <div className="flex items-start space-x-4">
-            <div className="w-20 h-20 bg-green-200 rounded-lg flex-shrink-0"></div>
-            <div className="flex-1 space-y-3">
+          <div className="flex items-start md:space-x-4">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-200 rounded-lg flex-shrink-0"></div>
+            <div className="hidden md:block flex-1 space-y-3">
               <div className="w-3/4 h-5 bg-green-200 rounded"></div>
               <div className="w-1/2 h-4 bg-green-100 rounded"></div>
               <div className="w-32 h-4 bg-green-50 rounded"></div>

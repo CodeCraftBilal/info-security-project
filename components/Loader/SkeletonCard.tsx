@@ -19,12 +19,12 @@ const SkeletonCard: React.FC<SkeletonCardProps> = ({
   );
 
   const renderProduct = () => (
-    <div className={`bg-white rounded-2xl p-4 shadow-sm border border-green-100 animate-pulse ${className}`}>
+    <div className={`bg-white rounded-2xl p-2 md:p-4 shadow-sm border border-green-100 animate-pulse ${className}`}>
       {/* Image */}
-      <div className="w-full h-48 bg-blue-200 rounded-xl mb-4"></div>
+      <div className="w-full h-24 md:h-48 bg-blue-200 rounded-xl md:mb-4"></div>
       
       {/* Content */}
-      <div className="space-y-3">
+      <div className="hidden md:block space-y-3">
         <div className="w-3/4 h-5 bg-blue-200 rounded"></div>
         <div className="w-1/2 h-4 bg-blue-100 rounded"></div>
         
@@ -44,13 +44,13 @@ const SkeletonCard: React.FC<SkeletonCardProps> = ({
   );
 
   const renderDetailed = () => (
-    <div className={`bg-white rounded-2xl p-6 shadow-sm border border-green-100 animate-pulse ${className}`}>
-      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
+    <div className={`bg-white rounded-2xl p-2 sm:p-6 shadow-sm border border-green-100 animate-pulse ${className}`}>
+      <div className="flex flex-col sm:flex-row space-y-0 sm:space-x-6">
         {/* Image */}
-        <div className="w-full sm:w-40 h-40 bg-blue-200 rounded-xl flex-shrink-0"></div>
+        <div className="w-full h-24 sm:w-40 sm:h-40 bg-blue-200 rounded-xl flex-shrink-0"></div>
         
         {/* Content */}
-        <div className="flex-1 space-y-4">
+        <div className="hidden sm:block flex-1 space-y-4">
           {/* Header */}
           <div className="space-y-2">
             <div className="w-3/4 h-6 bg-blue-200 rounded"></div>
