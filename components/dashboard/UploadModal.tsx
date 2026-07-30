@@ -115,7 +115,6 @@ const UploadModal: React.FC<UploadModalProps> = ({
       formData.append('timestamp', sigData.timestamp.toString());
       formData.append('signature', sigData.signature);
       formData.append('folder', 'encryptedFiles');
-      formData.append('resource_type', 'raw');
 
       const cloudinaryUrl = await new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest();

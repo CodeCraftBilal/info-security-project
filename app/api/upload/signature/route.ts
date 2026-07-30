@@ -23,7 +23,6 @@ export async function POST(req: Request) {
       {
         timestamp: timestamp,
         folder: 'encryptedFiles',
-        resource_type: 'raw', // we upload encrypted files as raw files
       },
       process.env.CLOUDINARY_API_SECRET as string
     );
