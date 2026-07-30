@@ -5,6 +5,7 @@ import { fetchAndDecryptFile, deleteFileAction, getDecryptedFileBlob } from '@/l
 import FileItemMenu from './FileItemMenu';
 import ImagePreviewModal from './ImagePreviewModal';
 import ShareFileDialog from './ShareFileDialog';
+import LoadingSpinner from '../Loader/LoadingSpinner';
 
 export type FileMetaData = {
   id: number;
@@ -34,18 +35,28 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
     let url: string | null = null;
     const loadThumbnail = async () => {
       if (file.type.startsWith('image/')) {
+        if (!keyPair) {
+          setIsDecrypting(true);
+          return; // Wait for keyPair to load
+        }
+        
+        if (!keyPair.privateKey) {
+          if (active) {
+            setThumbnailError('No preview available');
+            setIsDecrypting(false);
+          }
+          return;
+        }
+
         setIsDecrypting(true);
         try {
-          if (!keyPair?.privateKey) {
-            throw new Error('No private key to decrypt preview');
-          }
           const blob = await getDecryptedFileBlob(file.id.toString(), keyPair);
           if (active) {
             url = URL.createObjectURL(blob);
             setThumbnailUrl(url);
           }
         } catch (err: any) {
-          if (active) setThumbnailError(err.message);
+          if (active) setThumbnailError('No preview available');
         } finally {
           if (active) setIsDecrypting(false);
         }
@@ -102,7 +113,10 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
                  <span className="max-w-[120px] leading-tight">{thumbnailError}</span>
                </div>
              ) : isDecrypting ? (
-               <div className="text-gray-400 text-xs sm:text-sm animate-pulse">Decrypting...</div>
+               <div className="flex flex-col items-center justify-center">
+                 <LoadingSpinner size="small" color="primary" />
+                 <span className="text-blue-400 text-[10px] sm:text-xs mt-2 animate-pulse font-medium">Decrypting...</span>
+               </div>
              ) : (
                <ImageIcon className="w-8 h-8 sm:w-12 sm:h-12 text-gray-300" />
              )
