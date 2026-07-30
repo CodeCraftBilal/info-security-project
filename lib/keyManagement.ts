@@ -123,7 +123,7 @@ export const getKeyPairFromIndexedDB = async (): Promise<KeyPair | null> => {
 // Other functions (delete, generate, etc.) remain similar but use withTransaction
 
 // Add these to your existing exports in keyManagement.ts
-export const generateAndStoreKeyPair = async (): Promise<KeyPair> => {
+export const generateKeyPairOnly = async (): Promise<KeyPair> => {
   try {
     const keyPair = await window.crypto.subtle.generateKey(
       {
@@ -133,18 +133,26 @@ export const generateAndStoreKeyPair = async (): Promise<KeyPair> => {
         hash: { name: 'SHA-256' }
       },
       true, // Extractable
-      ['encrypt', 'decrypt', 'wrapKey', 'unwrapKey'] // Add unwrapKey here
+      ['encrypt', 'decrypt', 'wrapKey', 'unwrapKey']
     );
 
-    const formattedKeyPair: KeyPair = {
+    return {
       privateKey: keyPair.privateKey,
       publicKey: keyPair.publicKey
     };
+  } catch (error) {
+    console.error('Key generation error:', error);
+    throw error;
+  }
+};
 
+export const generateAndStoreKeyPair = async (): Promise<KeyPair> => {
+  try {
+    const formattedKeyPair = await generateKeyPairOnly();
     await saveKeyPairToIndexedDB(formattedKeyPair);
     return formattedKeyPair;
   } catch (error) {
-    console.error('Key generation error:', error);
+    console.error('Key generation and store error:', error);
     throw error;
   }
 };
@@ -152,6 +160,10 @@ export const generateAndStoreKeyPair = async (): Promise<KeyPair> => {
 export const exportPublicKeyAsBase64 = async (publicKey: CryptoKey): Promise<string> => {
   const exported = await window.crypto.subtle.exportKey('spki', publicKey);
   return btoa(String.fromCharCode(...new Uint8Array(exported)));
+};
+
+export const exportPrivateKeyAsArrayBuffer = async (privateKey: CryptoKey): Promise<ArrayBuffer> => {
+  return await window.crypto.subtle.exportKey('pkcs8', privateKey);
 };
 
 export const keyPairExists = async (): Promise<boolean> => {

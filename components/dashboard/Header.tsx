@@ -11,7 +11,7 @@ import Image from 'next/image';
 const Header: React.FC = () => {
   const router = useRouter();
   const { data: authSession } = useSession();
-  const { keyPair, isGeneratingKey } = useKeyPair();
+  const { keyPair, isInitializing } = useKeyPair();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -43,10 +43,10 @@ const Header: React.FC = () => {
       <div className="hidden md:flex actionbtns gap-3 items-center">
         <button 
           onClick={handleUploadClick} 
-          disabled={isGeneratingKey} 
+          disabled={!keyPair || isInitializing} 
           className="bg-blue-300 disabled:opacity-50 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold h-fit"
         >
-          {isGeneratingKey ? 'Generating Keys...' : 'Upload File'}
+          {(!keyPair || isInitializing) ? 'Loading...' : 'Upload File'}
         </button>
         <button 
           onClick={handleShare} 
@@ -76,10 +76,10 @@ const Header: React.FC = () => {
           <div className="absolute right-2 top-[60px] bg-[#26305aec] p-4 rounded-xl shadow-xl flex flex-col gap-3 z-50 border border-blue-400/20">
             <button 
               onClick={handleUploadClick} 
-              disabled={isGeneratingKey} 
+              disabled={!keyPair || isInitializing} 
               className="bg-blue-300 disabled:opacity-50 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold w-full"
             >
-              {isGeneratingKey ? 'Generating...' : 'Upload File'}
+              {(!keyPair || isInitializing) ? 'Loading...' : 'Upload File'}
             </button>
             <button 
               onClick={handleShare} 

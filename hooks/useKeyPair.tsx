@@ -2,90 +2,78 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { KeyPair } from '@/lib/crypto';
-import { getKeyPairFromIndexedDB, generateAndStoreKeyPair, keyPairExists, exportPublicKeyAsBase64 } from '@/lib/keyManagement';
+import { getKeyPairFromIndexedDB, keyPairExists } from '@/lib/keyManagement';
 
 interface KeyContextType {
   keyPair: KeyPair | null;
-  isGeneratingKey: boolean;
+  needsOnboarding: boolean;
+  needsRecovery: boolean;
+  isInitializing: boolean;
+  setKeyPair: (kp: KeyPair | null) => void;
+  setNeedsOnboarding: (b: boolean) => void;
+  setNeedsRecovery: (b: boolean) => void;
 }
 
-const KeyContext = createContext<KeyContextType>({ keyPair: null, isGeneratingKey: false });
+const KeyContext = createContext<KeyContextType>({ 
+  keyPair: null, 
+  needsOnboarding: false, 
+  needsRecovery: false, 
+  isInitializing: true,
+  setKeyPair: () => {},
+  setNeedsOnboarding: () => {},
+  setNeedsRecovery: () => {}
+});
 
 export const KeyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [keyPair, setKeyPair] = useState<KeyPair | null>(null);
-  const { data: authSession, status, update } = useSession();
-  const [isGeneratingKey, setIsGeneratingKey] = useState(false);
+  const { data: authSession, status } = useSession();
+  
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [needsRecovery, setNeedsRecovery] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     const initializeKeys = async () => {
-      if (status !== 'authenticated' || !authSession?.user) return;
+      if (status !== 'authenticated' || !authSession?.user) {
+        setIsInitializing(status === 'loading');
+        return;
+      }
 
+      setIsInitializing(true);
       const exists = await keyPairExists();
       // @ts-ignore
       const hasPublicKey = authSession.user.hasPublicKey;
 
       if (!exists) {
         if (!hasPublicKey) {
-          setIsGeneratingKey(true);
-          try {
-            const newKeyPair = await generateAndStoreKeyPair();
-            setKeyPair(newKeyPair);
-
-            console.log('Generated new key pair:', newKeyPair);
-            
-            // Upload public key to server
-            const exportedPublicKey = await exportPublicKeyAsBase64(newKeyPair.publicKey);
-            const res = await fetch('/api/users/public-key', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ publicKey: exportedPublicKey })
-            });
-
-            if (!res.ok) {
-              throw new Error('Failed to upload public key');
-            }
-
-            console.log('Public key uploaded successfully');
-
-            // Update session locally to reflect the change
-            await update({ hasPublicKey: true });
-          } catch (error) {
-            console.error('Failed to generate/upload key pair', error);
-          } finally {
-            setIsGeneratingKey(false);
-          }
+          setNeedsOnboarding(true);
+          setNeedsRecovery(false);
         } else {
-          const newKeyPair = await generateAndStoreKeyPair();
-          setKeyPair(newKeyPair);
-          
-          const exportedPublicKey = await exportPublicKeyAsBase64(newKeyPair.publicKey);
-          await fetch('/api/users/public-key', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ publicKey: exportedPublicKey })
-          });
+          setNeedsRecovery(true);
+          setNeedsOnboarding(false);
         }
       } else {
         const pair = await getKeyPairFromIndexedDB();
         setKeyPair(pair);
-        
-        if (!hasPublicKey && pair?.publicKey) {
-          const exportedPublicKey = await exportPublicKeyAsBase64(pair.publicKey);
-          await fetch('/api/users/public-key', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ publicKey: exportedPublicKey })
-          });
-          await update({ hasPublicKey: true });
-        }
+        setNeedsOnboarding(false);
+        setNeedsRecovery(false);
       }
+      setIsInitializing(false);
     };
 
     initializeKeys();
   }, [status, authSession]);
 
   return (
-    <KeyContext.Provider value={{ keyPair, isGeneratingKey }}>
+    <KeyContext.Provider value={{ 
+      keyPair, 
+      needsOnboarding, 
+      needsRecovery, 
+      isInitializing,
+      setKeyPair,
+      setNeedsOnboarding,
+      setNeedsRecovery
+    }}>
       {children}
     </KeyContext.Provider>
   );

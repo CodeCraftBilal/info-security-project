@@ -21,7 +21,11 @@ export async function GET(req: Request) {
     console.log('Fetched user:', user);
 
     if (user && user.publicKey) {
-      return NextResponse.json({ publicKey: user.publicKey });
+      return NextResponse.json({ 
+        publicKey: user.publicKey,
+        encryptedPrivateKey: user.encryptedPrivateKey,
+        privateKeyIV: user.privateKeyIV
+      });
     } else {
       return NextResponse.json({ error: 'User not found or no public key available' }, { status: 404 });
     }
@@ -38,7 +42,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { publicKey } = await req.json();
+    const { publicKey, encryptedPrivateKey, privateKeyIV } = await req.json();
 
     console.log('Received public key:', publicKey);
 
@@ -50,13 +54,17 @@ export async function POST(req: Request) {
     const client = await clientPromise;
     const db = client.db('secureShare');
 
+    const updateFields: any = { publicKey };
+    if (encryptedPrivateKey) updateFields.encryptedPrivateKey = encryptedPrivateKey;
+    if (privateKeyIV) updateFields.privateKeyIV = privateKeyIV;
+
     const result = await db.collection('users').updateOne(
       { email: session.user.email },
-      { $set: { publicKey } }
+      { $set: updateFields }
     );
 
-    if (result.modifiedCount === 0) {
-      return NextResponse.json({ error: 'Failed to update public key' }, { status: 500 });
+    if (result.modifiedCount === 0 && result.matchedCount === 0) {
+      return NextResponse.json({ error: 'Failed to update user keys' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

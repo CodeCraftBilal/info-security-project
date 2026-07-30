@@ -7,6 +7,8 @@ export interface User {
   image?: string;
   role: string;
   publicKey?: string;
+  encryptedPrivateKey?: string;
+  privateKeyIV?: string;
   emailVerified?: Date | null;
   createdAt: Date;
 }

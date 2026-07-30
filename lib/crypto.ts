@@ -1,5 +1,6 @@
 // crypto.ts (or lib/crypto.ts)
-import { randomBytes } from 'crypto';
+import { generateMnemonic, mnemonicToSeedSync } from '@scure/bip39';
+import { wordlist } from '@scure/bip39/wordlists/english.js';
 
 // ✅ Export interfaces so you can import them anywhere
 export interface KeyPair {
@@ -146,7 +147,20 @@ export class CryptoService {
         hash: 'SHA-256'
       },
       true,
-      ['encrypt']
+      ['encrypt', 'wrapKey']
+    );
+  }
+
+  static async importPrivateKey(privateKeyBuffer: ArrayBuffer): Promise<CryptoKey> {
+    return window.crypto.subtle.importKey(
+      'pkcs8',
+      privateKeyBuffer,
+      {
+        name: 'RSA-OAEP',
+        hash: 'SHA-256'
+      },
+      true,
+      ['decrypt', 'unwrapKey']
     );
   }
 
@@ -166,5 +180,40 @@ export class CryptoService {
       binary += String.fromCharCode(bytes[i]);
     }
     return btoa(binary);
+  }
+
+  static generateRecoveryPhrase(): string {
+    return generateMnemonic(wordlist);
+  }
+
+  static async deriveAesKeyFromMnemonic(mnemonic: string): Promise<CryptoKey> {
+    const seed = mnemonicToSeedSync(mnemonic);
+    const hash = await window.crypto.subtle.digest('SHA-256', seed);
+    return await window.crypto.subtle.importKey(
+      'raw',
+      hash,
+      { name: 'AES-GCM' },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+
+  static async encryptPrivateKey(privateKeyBuffer: ArrayBuffer, aesKey: CryptoKey): Promise<{ encrypted: ArrayBuffer, iv: Uint8Array }> {
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await window.crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv },
+      aesKey,
+      privateKeyBuffer
+    );
+    return { encrypted, iv };
+  }
+
+  static async decryptPrivateKey(encryptedBuffer: ArrayBuffer, iv: Uint8Array, aesKey: CryptoKey): Promise<ArrayBuffer> {
+    const decrypted = await window.crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: iv },
+      aesKey,
+      encryptedBuffer
+    );
+    return decrypted;
   }
 }
