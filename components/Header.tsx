@@ -1,6 +1,6 @@
 'use client'
-import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 
 const Header = () => {
@@ -10,8 +10,8 @@ const Header = () => {
         <header className="flex items-center py-6 px-4 fixed top-0 w-full bg-[#180c35] h-18 z-50">
             <div className="container mx-auto flex justify-between items-center">
                 <Link href={'/'} className="flex items-center">
-                    <div className="w-16 h-16 rounded-lg flex items-center justify-center mr-3">
-                        <img src="/logo.svg" className='w-16 h-16' alt="secureShare" />
+                    <div className="w-16 h-16 rounded-lg flex items-center justify-center mr-1">
+                        <Image src="logo.svg" alt="logo" width={48} height={48} />
                     </div>
                     <span className="text-2xl font-bold text-gray-100">SecureShare</span>
                 </Link>
