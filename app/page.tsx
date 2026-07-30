@@ -13,12 +13,6 @@ export default function Home() {
   return (
     <div>
       <div className="min-h-screen bg-gradient-to-b from-[#180c35] to-[#1e0d8e]">
-        <Head>
-          <title>SecureShare | End-to-End Encrypted File Sharing</title>
-          <meta name="description" content="Secure file sharing with military-grade encryption" />
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
-
         <Header />
 
         <main className="container mx-auto px-4 py-8">

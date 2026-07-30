@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="105 105 300 305" width="100%" height="100%">
+  <defs>
+    <!-- Main Folder Gradient -->
+    <linearGradient id="folderGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#73D0D8" />
+      <stop offset="45%" stop-color="#4DB0D3" />
+      <stop offset="100%" stop-color="#2D83C7" />
+    </linearGradient>
+
+    <!-- Folder Edge Highlight Gradient -->
+    <linearGradient id="highlightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#B7F4F6" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#55B6E8" stop-opacity="0.1" />
+    </linearGradient>
+
+    <!-- Lock Body Gradient -->
+    <linearGradient id="lockGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#AFDDF9" />
+      <stop offset="100%" stop-color="#76B0E4" />
+    </linearGradient>
+
+    <!-- Shackle Gradient -->
+    <linearGradient id="shackleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#80BBE8" />
+      <stop offset="50%" stop-color="#C5E8FF" />
+      <stop offset="100%" stop-color="#72A8D9" />
+    </linearGradient>
+
+    <!-- Node/Sphere Gradients -->
+    <radialGradient id="sphereGradTop" cx="35%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#AEEFEE" />
+      <stop offset="70%" stop-color="#55B5B8" />
+      <stop offset="100%" stop-color="#3A8A8C" />
+    </radialGradient>
+    
+    <radialGradient id="sphereGradBottom" cx="35%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#7ACEE6" />
+      <stop offset="70%" stop-color="#3589C7" />
+      <stop offset="100%" stop-color="#216499" />
+    </radialGradient>
+
+    <radialGradient id="sphereGradLeft" cx="35%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#93E0E2" />
+      <stop offset="70%" stop-color="#40A0D0" />
+      <stop offset="100%" stop-color="#2575A3" />
+    </radialGradient>
+
+    <radialGradient id="sphereGradRight" cx="35%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#8ADBE1" />
+      <stop offset="70%" stop-color="#3B9AD0" />
+      <stop offset="100%" stop-color="#2572A1" />
+    </radialGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0E4266" flood-opacity="0.25" />
+    </filter>
+    
+    <filter id="lockShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#0E4266" flood-opacity="0.35" />
+    </filter>
+
+    <filter id="blurShadow">
+      <feGaussianBlur stdDeviation="6" />
+    </filter>
+  </defs>
+
+  <!-- BACKGROUND NODES & PIPES -->
+  <g id="connections" filter="url(#dropShadow)">
+    <!-- Top Node -->
+    <rect x="252" y="125" width="8" height="50" fill="#67C6CD" />
+    <circle cx="256" cy="125" r="14" fill="url(#sphereGradTop)" />
+
+    <!-- Bottom Node -->
+    <rect x="252" y="335" width="8" height="50" fill="#3187C8" />
+    <circle cx="256" cy="385" r="14" fill="url(#sphereGradBottom)" />
+
+    <!-- Left Node -->
+    <rect x="125" y="252" width="50" height="8" fill="#4AAFD2" />
+    <circle cx="125" cy="256" r="14" fill="url(#sphereGradLeft)" />
+
+    <!-- Right Node -->
+    <rect x="337" y="252" width="50" height="8" fill="#46A9CE" />
+    <circle cx="387" cy="256" r="14" fill="url(#sphereGradRight)" />
+
+    <!-- Side Loops (Bumpers) -->
+    <rect x="140" y="202" width="50" height="12" rx="6" fill="#61C3CE" />
+    <rect x="140" y="298" width="50" height="12" rx="6" fill="#3795D3" />
+    <rect x="322" y="202" width="50" height="12" rx="6" fill="#5DC0CB" />
+    <rect x="322" y="298" width="50" height="12" rx="6" fill="#3795D3" />
+  </g>
+
+  <!-- MAIN FOLDER -->
+  <g id="folder" filter="url(#dropShadow)">
+    <!-- Base Shape -->
+    <path d="M 185 170 
+             L 230 170 
+             L 250 190 
+             L 327 190 
+             A 15 15 0 0 1 342 205 
+             L 342 327 
+             A 15 15 0 0 1 327 342 
+             L 185 342 
+             A 15 15 0 0 1 170 327 
+             L 170 185 
+             A 15 15 0 0 1 185 170 Z" 
+          fill="url(#folderGrad)" />
+          
+    <!-- 3D Bevel/Highlight -->
+    <path d="M 185 170 
+             L 230 170 
+             L 250 190 
+             L 327 190 
+             A 15 15 0 0 1 342 205 
+             L 342 327 
+             A 15 15 0 0 1 327 342 
+             L 185 342 
+             A 15 15 0 0 1 170 327 
+             L 170 185 
+             A 15 15 0 0 1 185 170 Z" 
+          fill="none" stroke="url(#highlightGrad)" stroke-width="2" transform="translate(0, -1.5)" />
+
+    <!-- Inset Grooves -->
+    <g fill="rgba(10, 50, 90, 0.35)">
+      <rect x="175" y="252" width="40" height="8" rx="4" />
+      <rect x="297" y="252" width="40" height="8" rx="4" />
+      <rect x="252" y="190" width="8" height="45" rx="4" />
+      <rect x="252" y="297" width="8" height="40" rx="4" />
+    </g>
+  </g>
+
+  <!-- LOCK ASSEMBLY -->
+  <g id="lock" filter="url(#lockShadow)">
+    <!-- Ambient Lock Shadow on Folder -->
+    <ellipse cx="256" cy="266" rx="42" ry="38" fill="rgba(15, 60, 95, 0.4)" filter="url(#blurShadow)" />
+
+    <!-- Shackle -->
+    <path d="M 235 245 
+             L 235 218 
+             A 21 21 0 0 1 277 218 
+             L 277 245" 
+          fill="none" stroke="url(#shackleGrad)" stroke-width="12" stroke-linecap="round" />
+    
+    <!-- Shackle Inner Shadow/Highlight -->
+    <path d="M 235 245 
+             L 235 218 
+             A 21 21 0 0 1 277 218 
+             L 277 245" 
+          fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.4" transform="translate(0, -1)" />
+
+    <!-- Lock Body -->
+    <rect x="221" y="240" width="70" height="52" rx="10" fill="url(#lockGrad)" />
+    
+    <!-- Lock Body Highlight -->
+    <rect x="222" y="241" width="68" height="50" rx="9" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.7" />
+
+    <!-- Keyhole -->
+    <g id="keyhole" fill="#28527A">
+      <circle cx="256" cy="257" r="5" />
+      <path d="M 252.5 257 L 250 270 L 262 270 L 259.5 257 Z" />
+    </g>
+  </g>
+</svg>

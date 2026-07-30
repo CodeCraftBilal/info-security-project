@@ -7,11 +7,11 @@ const Header = () => {
     const { data: session } = useSession();
 
     return (
-        <header className="py-6 px-4 fixed top-0 w-full bg-[#180c35] h-18 z-50">
+        <header className="flex items-center py-6 px-4 fixed top-0 w-full bg-[#180c35] h-18 z-50">
             <div className="container mx-auto flex justify-between items-center">
                 <Link href={'/'} className="flex items-center">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-3">
-                        <img src="/logo2.png" alt="secureShare" />
+                    <div className="w-16 h-16 rounded-lg flex items-center justify-center mr-3">
+                        <img src="/logo.svg" className='w-16 h-16' alt="secureShare" />
                     </div>
                     <span className="text-2xl font-bold text-gray-100">SecureShare</span>
                 </Link>

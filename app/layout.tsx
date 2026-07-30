@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SecureShare - secure your files",
   description: "A project for uploading files with with securty and end to end encryption for file sharing",
+  icons: {
+    icon: "/logo.svg",
+  }
 };
 
 export default function RootLayout({

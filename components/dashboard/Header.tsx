@@ -83,7 +83,7 @@ const Header: React.FC = () => {
   return (
     <div className="topbar p-2 flex items-center justify-between h-[60px] relative">
       <Link className='logo gap-0 flex items-center cursor-pointer' href={'/'}>
-        <img src="/logo.png" alt="logo" className="w-[60px] h-[60px] md:w-[100px] md:h-[100px]" />
+        <img src="logo.svg" alt="logo" className="w-16 h-16" />
         <span className="text-white font-bold text-2xl hidden md:block">SecureShare</span>
       </Link>
 
