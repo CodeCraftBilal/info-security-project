@@ -3,14 +3,25 @@ import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import FileItem, { FileMetaData } from '@/components/dashboard/FileItem';
 import { useKeyPair } from '@/hooks/useKeyPair';
+import UploadModal, { FileUploadState } from '@/components/dashboard/UploadModal';
+import TemporaryFileItem from '@/components/dashboard/TemporaryFileItem';
+import EmptyFiles from '@/components/dashboard/EmptyFiles';
 
 export default function DashboardPage() {
   const [search, setSearch] = useState<string>('');
   const [filesToDisplay, setFilesToDisplay] = useState<FileMetaData[] | null>(null);
   const [filteredFiles, setFilteredFiles] = useState<FileMetaData[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [temporaryUploads, setTemporaryUploads] = useState<FileUploadState[]>([]);
   
   const { keyPair } = useKeyPair();
+
+  useEffect(() => {
+    const handleOpenModal = () => setIsUploadModalOpen(true);
+    window.addEventListener('openUploadModal', handleOpenModal);
+    return () => window.removeEventListener('openUploadModal', handleOpenModal);
+  }, []);
 
   const getFilesDataFromServer = async () => {
     setIsLoading(true);
@@ -29,7 +40,17 @@ export default function DashboardPage() {
       
       const data: FileMetaData[] = await response.json();
       setFilesToDisplay(data);
-      setFilteredFiles(data);
+      
+      // Maintain search filter if any
+      if (search !== '') {
+        const filtered = data.filter(file =>
+          file.name.toLowerCase().includes(search) ||
+          file.type.toLowerCase().includes(search)
+        );
+        setFilteredFiles(filtered);
+      } else {
+        setFilteredFiles(data);
+      }
     } catch (error) {
       alert('Failed to load files. Please try again.');
     } finally {
@@ -39,6 +60,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     getFilesDataFromServer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -61,14 +83,51 @@ export default function DashboardPage() {
     }
   };
 
+  // Pagination logic
   const paginatedFiles = filteredFiles?.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
   const totalPages = filteredFiles ? Math.ceil(filteredFiles.length / itemsPerPage) : 0;
 
+  // Upload Handlers
+  const handleUploadStart = (files: FileUploadState[]) => {
+    setTemporaryUploads(prev => [...files, ...prev]);
+    setIsUploadModalOpen(false); // Close modal when upload starts to show optimistic UI
+  };
+
+  const handleUploadProgress = (id: string, progress: number) => {
+    setTemporaryUploads(prev => prev.map(f => f.id === id ? { ...f, progress } : f));
+  };
+
+  const handleUploadComplete = async (id: string, savedFileId: string) => {
+    // Refresh files to get the newly uploaded one
+    await getFilesDataFromServer();
+    
+    // Remove from temporary uploads since it's now in the fetched list
+    setTemporaryUploads(prev => prev.filter(f => f.id !== id));
+  };
+
+  const handleUploadError = (id: string, error: string) => {
+    setTemporaryUploads(prev => prev.map(f => f.id === id ? { ...f, status: 'error', errorMessage: error } : f));
+    // We could keep it in the list for a while so user sees error, 
+    // or auto-remove after a few seconds. Let's keep it until they refresh or we add a dismiss button.
+  };
+
+  const hasNoFiles = !isLoading && (filesToDisplay?.length === 0) && (temporaryUploads.length === 0);
+
   return (
-    <div className='w-full h-full px-4 flex flex-col gap-2'>
+    <div className='w-full h-full px-4 flex flex-col gap-2 relative'>
+      {/* Upload Modal */}
+      <UploadModal 
+        isOpen={isUploadModalOpen} 
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadStart={handleUploadStart}
+        onUploadProgress={handleUploadProgress}
+        onUploadComplete={handleUploadComplete}
+        onUploadError={handleUploadError}
+      />
+
       <div className="search flex items-center gap-2 rounded-lg mt-4 p-1 bg-blue-300 mx-2 w-[90%]">
         <input 
           onChange={handleChangeSearch} 
@@ -84,12 +143,23 @@ export default function DashboardPage() {
 
       <div className="flex-1 min-h-0 overflow-auto">
         <div className="filescontainer grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-6 p-2 text-blue-600">
-          {isLoading ? (
-            <div className='col-span-full text-center'>Loading files...</div>
-          ) : !isLoading && filteredFiles?.length === 0 ? (
-            <div className='col-span-full text-center'>No files found</div>
-          ) : null}
+          
+          {isLoading && <div className='col-span-full text-center'>Loading files...</div>}
+          
+          {hasNoFiles && (
+            <EmptyFiles 
+              title="No Files Found" 
+              message="You haven't uploaded any files yet. Click the upload button to get started and securely store your data."
+              onUploadClick={() => setIsUploadModalOpen(true)}
+            />
+          )}
 
+          {/* Render Temporary Uploading Files */}
+          {temporaryUploads.map((fileState) => (
+            <TemporaryFileItem key={fileState.id} fileState={fileState} />
+          ))}
+
+          {/* Render Fetched Files */}
           {paginatedFiles?.map((file) => (
             <FileItem 
               key={file.id} 
