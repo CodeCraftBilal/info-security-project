@@ -93,7 +93,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
     });
   };
 
-  const uploadFile = async (fileState: FileUploadState, uploaderId: number) => {
+  const uploadFile = async (fileState: FileUploadState, uploaderId: string) => {
     try {
       // 1. Encrypt the file
       const encryptedDataArray = await encryptFiles([fileState.file], keyPair);
@@ -176,7 +176,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
 
   const handleUploadClick = async () => {
     if (!authSession?.user?.id) return;
-    const uploaderId = Number(authSession.user.id);
+    const uploaderId = authSession.user.id;
     
     const filesToUpload = selectedFiles.filter(f => f.status === 'pending');
     if (filesToUpload.length === 0) return;

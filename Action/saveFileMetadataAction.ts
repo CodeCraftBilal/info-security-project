@@ -8,7 +8,7 @@ export async function saveFileMetadataAction(metadata: {
     encryptedAesKey: string;
     mimeType: string;
     iv: string;
-    uploaderId: number;
+    uploaderId: string;
 }) {
     if (!metadata || !metadata.fileName || !metadata.cloudinaryUrl) {
         return { message: 'Invalid metadata provided', error: true };
@@ -25,7 +25,7 @@ export async function saveFileMetadataAction(metadata: {
             encryptedAesKey: metadata.encryptedAesKey,
             mimeType: metadata.mimeType,
             iv: metadata.iv,
-            uploaderId: metadata.uploaderId.toString(),
+            uploaderId: metadata.uploaderId,
             uploadDate: new Date()
         });
 
