@@ -120,6 +120,19 @@ export const getKeyPairFromIndexedDB = async (): Promise<KeyPair | null> => {
   }
 };
 
+export const deleteKeyPairFromIndexedDB = async (): Promise<void> => {
+  try {
+    await withTransaction((store) => new Promise<void>((resolve, reject) => {
+      const request = store.delete(KEYPAIR_ID);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    }));
+  } catch (error) {
+    console.error('Delete error:', error);
+    throw error;
+  }
+};
+
 // Other functions (delete, generate, etc.) remain similar but use withTransaction
 
 // Add these to your existing exports in keyManagement.ts

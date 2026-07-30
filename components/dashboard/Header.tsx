@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { useKeyPair } from '@/hooks/useKeyPair';
+import { deleteKeyPairFromIndexedDB } from '@/lib/keyManagement';
 import { Menu } from 'lucide-react';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import Image from 'next/image';
@@ -25,6 +26,11 @@ const Header: React.FC = () => {
   }
 
   const logout = async () => {
+    try {
+      await deleteKeyPairFromIndexedDB();
+    } catch (error) {
+      console.error('Failed to clear local keys during logout', error);
+    }
     await signOut({ callbackUrl: '/' });
   }
 
