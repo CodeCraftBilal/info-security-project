@@ -5,6 +5,7 @@ import { CryptoService } from '@/lib/crypto';
 import { getKeyPairFromIndexedDB } from '@/lib/keyManagement';
 import { useSession } from 'next-auth/react';
 import SharedFileItem, { SharedFile } from './dashboard/SharedFileItem';
+import ContentLoader from './Loader/ContentLoader';
 
 interface User {
   userId: string;
@@ -226,7 +227,9 @@ const SharedWithMe = () => {
       <div className="flex-1 min-h-0 overflow-auto">
         <div className="filescontainer grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-6 p-2 text-blue-600">
           {loading ? (
-            <div className='col-span-full text-center'>Loading files...</div>
+            <div className='col-span-full text-center'>
+              <ContentLoader type='grid'/>
+            </div>
           ) : !loading && filteredFiles.length === 0 ? (
             <div className='col-span-full text-center'>No shared files found</div>
           ) : null}

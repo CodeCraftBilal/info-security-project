@@ -1,12 +1,9 @@
 'use client'
-import Image from "next/image";
-import Head from 'next/head';
 import Header from '@/components/Header';
 import Features from '@/components/Features';
 import SecurityBadges from '@/components/SecurityBadges';
 import CTA from '@/components/CTA';
 import Footer from '@/components/Footer';
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default function Home() {

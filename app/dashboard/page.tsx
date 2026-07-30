@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import FileItem, { FileMetaData } from '@/components/dashboard/FileItem';
 import { useKeyPair } from '@/hooks/useKeyPair';
+import ContentLoader from '@/components/Loader/ContentLoader';
 
 export default function DashboardPage() {
   const [search, setSearch] = useState<string>('');
@@ -85,7 +86,9 @@ export default function DashboardPage() {
       <div className="flex-1 min-h-0 overflow-auto">
         <div className="filescontainer grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-6 p-2 text-blue-600">
           {isLoading ? (
-            <div className='col-span-full text-center'>Loading files...</div>
+            <div className='col-span-full text-center'>
+              <ContentLoader type='grid'/>
+            </div>
           ) : !isLoading && filteredFiles?.length === 0 ? (
             <div className='col-span-full text-center'>No files found</div>
           ) : null}
