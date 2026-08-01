@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import "./globals.css";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -72,6 +73,7 @@ export default function RootLayout({
         <SessionProvider>
           {children}
         </SessionProvider>
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID!} />
       </body>
     </html>
   );

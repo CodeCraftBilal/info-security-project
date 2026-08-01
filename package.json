@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.3",
+    "@next/third-parties": "^16.2.12",
     "@scure/bip39": "^2.2.0",
     "@types/bcrypt": "^5.0.2",
     "bcrypt": "^6.0.0",
