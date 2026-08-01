@@ -8,6 +8,7 @@ import { deleteKeyPairFromIndexedDB } from '@/lib/keyManagement';
 import { Menu } from 'lucide-react';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import Image from 'next/image';
+import NotificationDropdown from './NotificationDropdown';
 
 const Header: React.FC = () => {
   const router = useRouter();
@@ -47,6 +48,7 @@ const Header: React.FC = () => {
       </Link>
 
       <div className="hidden md:flex actionbtns gap-3 items-center">
+        <NotificationDropdown />
         <button 
           onClick={handleUploadClick} 
           disabled={!keyPair || isInitializing} 

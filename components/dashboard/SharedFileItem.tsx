@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { FileText, Image as ImageIcon, File } from 'lucide-react';
+import { FileText, Image as ImageIcon, File, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { CryptoService } from '@/lib/crypto';
 import FileItemMenu from './FileItemMenu';
 import ImagePreviewModal from './ImagePreviewModal';
+import { useSession } from 'next-auth/react';
 
 export interface SharedFile {
   _id: string;
@@ -14,8 +15,11 @@ export interface SharedFile {
   senderUsername: string;
   recipientUsername: string;
   createdAt: string;
+  expiresAt: string;
   encryptedKey: string;
   iv: string;
+  senderProfilePic?: string;
+  recipientProfilePic?: string;
 }
 
 interface SharedFileItemProps {
@@ -46,6 +50,14 @@ function base64ToUint8Array(base64: string) {
 }
 
 const SharedFileItem: React.FC<SharedFileItemProps> = ({ file, keyPair, onRefresh, onAction, onDelete }) => {
+  const { data: authSession } = useSession();
+  const currentUsername = authSession?.user?.email;
+  const isOutgoing = currentUsername === file.senderUsername;
+  
+  const otherPersonName = isOutgoing ? file.recipientUsername : file.senderUsername;
+  const otherPersonPic = isOutgoing ? file.recipientProfilePic : file.senderProfilePic;
+  const otherPersonLabel = isOutgoing ? 'Shared to' : 'Shared by';
+
   const [showDetails, setShowDetails] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [thumbnailError, setThumbnailError] = useState<string | null>(null);
@@ -115,6 +127,7 @@ const SharedFileItem: React.FC<SharedFileItemProps> = ({ file, keyPair, onRefres
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Unknown';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -141,6 +154,19 @@ const SharedFileItem: React.FC<SharedFileItemProps> = ({ file, keyPair, onRefres
       />
       
       <div className="flex flex-col bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-200 h-full w-full">
+        {/* Direction Indicator */}
+        <div className="absolute top-2 left-2 z-10 bg-white/80 backdrop-blur rounded-full p-1 shadow-sm">
+          {isOutgoing ? (
+            <span title="Shared by you">
+              <ArrowUpRight className="w-4 h-4 text-blue-500" />
+            </span>
+          ) : (
+            <span title="Shared with you">
+              <ArrowDownLeft className="w-4 h-4 text-green-500" />
+            </span>
+          )}
+        </div>
+
         {/* Thumbnail Area */}
         <div 
           className={`relative w-full h-32 sm:h-48 bg-gray-50 flex items-center justify-center overflow-hidden ${file.fileType.startsWith('image/') ? 'cursor-pointer hover:opacity-90' : ''}`}
@@ -171,8 +197,20 @@ const SharedFileItem: React.FC<SharedFileItemProps> = ({ file, keyPair, onRefres
               <span className="truncate max-w-[60%]">{file.fileType}</span>
               <span>{formatFileSize(file.fileSize)}</span>
            </div>
-           <div className="text-[8px] sm:text-[10px] text-gray-400 mt-1">{formatDate(file.createdAt)}</div>
-           <div className="text-[8px] sm:text-[10px] text-gray-400 mt-1 truncate">Shared by: {file.senderUsername}</div>
+           
+           <div className="mt-2 pt-2 border-t border-gray-100 flex items-center gap-2">
+              <img 
+                src={otherPersonPic || '/colImg.gif'} 
+                alt="Profile" 
+                className="w-6 h-6 rounded-full object-cover shrink-0"
+                onError={(e) => { (e.target as HTMLImageElement).src = '/colImg.gif'; }}
+              />
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] text-gray-400 leading-tight">{otherPersonLabel}:</span>
+                <span className="text-xs font-medium text-gray-700 truncate" title={otherPersonName}>{otherPersonName}</span>
+              </div>
+           </div>
+           <div className="text-[10px] text-red-400 mt-1">Expires: {formatDate(file.expiresAt)}</div>
         </div>
       </div>
 

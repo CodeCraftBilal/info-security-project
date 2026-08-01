@@ -8,7 +8,6 @@ export const SignupFormSchema = z.object({
   email: z
     .string()
     .email({ message: 'Please enter a valid email.' })
-    .max(25, { message: 'email should be less 25 characters' })
     .trim(),
   password: z
     .string()
