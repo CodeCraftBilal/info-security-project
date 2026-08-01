@@ -32,6 +32,8 @@ export const KeyProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [needsRecovery, setNeedsRecovery] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
+  const lastUserEmailRef = React.useRef<string | null>(null);
+
   useEffect(() => {
     const initializeKeys = async () => {
       if (status !== 'authenticated' || !authSession?.user) {
@@ -39,7 +41,14 @@ export const KeyProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return;
       }
 
-      setIsInitializing(true);
+      const currentUserEmail = authSession.user.email || null;
+      const isNewUser = lastUserEmailRef.current !== currentUserEmail;
+
+      if (isNewUser) {
+        setIsInitializing(true);
+        lastUserEmailRef.current = currentUserEmail;
+      }
+
       const exists = await keyPairExists();
       // @ts-ignore
       const hasPublicKey = authSession.user.hasPublicKey;
