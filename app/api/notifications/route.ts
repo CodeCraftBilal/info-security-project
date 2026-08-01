@@ -30,7 +30,7 @@ export async function GET(req: Request) {
       },
       {
         $addFields: {
-          senderProfilePic: { $arrayElemAt: ['$senderDetails.profilePic', 0] }
+          senderProfilePic: { $arrayElemAt: ['$senderDetails.image', 0] }
         }
       },
       {

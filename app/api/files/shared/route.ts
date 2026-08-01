@@ -44,8 +44,8 @@ export async function GET(request: Request) {
       },
       {
         $addFields: {
-          senderProfilePic: { $arrayElemAt: ['$senderDetails.profilePic', 0] },
-          recipientProfilePic: { $arrayElemAt: ['$recipientDetails.profilePic', 0] }
+          senderProfilePic: { $arrayElemAt: ['$senderDetails.image', 0] },
+          recipientProfilePic: { $arrayElemAt: ['$recipientDetails.image', 0] }
         }
       },
       {
