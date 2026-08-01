@@ -5,7 +5,7 @@ import { CryptoService, KeyPair } from '@/lib/crypto';
 import { generateKeyPairOnly, saveKeyPairToIndexedDB, exportPublicKeyAsBase64, exportPrivateKeyAsArrayBuffer } from '@/lib/keyManagement';
 import { useKeyPair } from '@/hooks/useKeyPair';
 import { useSession } from 'next-auth/react';
-import { Copy, Download, Check, AlertTriangle } from 'lucide-react';
+import { Copy, Download, Check, AlertTriangle, Shield, ArrowRight } from 'lucide-react';
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
@@ -100,79 +100,90 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-xl">
+    <div className="w-full max-w-3xl mx-auto mt-8 p-6 sm:p-8 rounded-2xl animate-fade-in-up" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Secure Your Account</h1>
-        <p className="text-gray-500 mt-2">End-to-End Encryption Setup</p>
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(99, 102, 241, 0.15)' }}>
+          <Shield className="w-8 h-8 text-primary-light" />
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">Secure Your Account</h1>
+        <p className="text-text-muted mt-2 text-sm">End-to-End Encryption Setup</p>
+        
+        {/* Step indicator */}
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 1 ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>1</div>
+          <div className="w-12 h-0.5" style={{ background: step >= 2 ? 'var(--primary)' : 'var(--border)' }} />
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step >= 2 ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>2</div>
+        </div>
       </div>
 
       {step === 1 && (
-        <div className="flex flex-col items-center">
-          <div className="bg-blue-50 p-6 rounded-xl mb-6 text-blue-900 w-full">
-            <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-blue-600" />
+        <div className="flex flex-col items-center animate-fade-in">
+          <div className="p-5 rounded-xl mb-6 w-full" style={{ background: 'var(--info-bg)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+            <h3 className="font-semibold text-sm mb-2 flex items-center gap-2 text-info">
+              <AlertTriangle className="w-4 h-4" />
               Why do I need this?
             </h3>
-            <p className="text-sm">
+            <p className="text-xs text-text-secondary leading-relaxed">
               SecureShare uses military-grade encryption directly in your browser. This means we never see your private files or your encryption keys. To ensure you never lose access to your files, we will generate a secure recovery phrase for you.
             </p>
           </div>
           <button 
             onClick={handleGenerate} 
             disabled={isGenerating}
-            className="px-8 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            className="btn btn-primary btn-lg"
           >
             {isGenerating ? 'Generating...' : 'Generate Encryption Keys'}
+            {!isGenerating && <ArrowRight className="w-5 h-5" />}
           </button>
         </div>
       )}
 
       {step === 2 && (
-        <div className="flex flex-col items-center">
-          <div className="bg-red-50 p-4 rounded-xl border border-red-200 w-full mb-6">
-            <h3 className="font-bold text-red-700 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5" />
+        <div className="flex flex-col items-center animate-fade-in">
+          <div className="p-4 rounded-xl w-full mb-6" style={{ background: 'var(--danger-bg)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+            <h3 className="font-bold text-danger flex items-center gap-2 text-sm">
+              <AlertTriangle className="w-4 h-4" />
               Critical: Save these words!
             </h3>
-            <p className="text-sm text-red-600 mt-1">
-              Write down this 12-word recovery phrase and keep it safe. If you log in from a new device, you will need this exact phrase to decrypt your files. <strong>We cannot recover it for you.</strong>
+            <p className="text-xs text-text-secondary mt-1 leading-relaxed">
+              Write down this 12-word recovery phrase and keep it safe. If you log in from a new device, you will need this exact phrase to decrypt your files. <strong className="text-text-primary">We cannot recover it for you.</strong>
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 w-full mb-6">
+          <div className="grid grid-cols-3 gap-2.5 w-full mb-6">
             {mnemonic.split(' ').map((word, idx) => (
-              <div key={idx} className="bg-gray-100 border border-gray-200 rounded-lg p-3 text-center relative">
-                <span className="absolute top-1 left-2 text-xs text-gray-400">{idx + 1}</span>
-                <span className="font-mono font-bold text-gray-800 tracking-wider">{word}</span>
+              <div key={idx} className="glass rounded-lg p-3 text-center relative">
+                <span className="absolute top-1 left-2 text-[10px] text-text-muted">{idx + 1}</span>
+                <span className="font-mono font-bold text-text-primary tracking-wider text-sm">{word}</span>
               </div>
             ))}
           </div>
 
-          <div className="flex gap-4 mb-8 w-full">
-            <button onClick={copyToClipboard} className="flex-1 flex items-center justify-center gap-2 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition">
-              {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+          <div className="flex gap-3 mb-6 w-full">
+            <button onClick={copyToClipboard} className="btn btn-secondary flex-1">
+              {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Copy'}
             </button>
-            <button onClick={downloadTxt} className="flex-1 flex items-center justify-center gap-2 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition">
+            <button onClick={downloadTxt} className="btn btn-secondary flex-1">
               <Download className="w-4 h-4" />
               Download .txt
             </button>
           </div>
 
-          <label className="flex items-center gap-3 mb-6 w-full cursor-pointer bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <label className="flex items-center gap-3 mb-6 w-full cursor-pointer glass rounded-xl p-4">
             <input 
               type="checkbox" 
-              className="w-5 h-5 rounded text-blue-600"
+              className="w-5 h-5 rounded accent-primary"
               checked={confirmed}
               onChange={(e) => setConfirmed(e.target.checked)}
             />
-            <span className="text-gray-700 font-medium">I have securely saved my 12-word recovery phrase.</span>
+            <span className="text-text-secondary text-sm font-medium">I have securely saved my 12-word recovery phrase.</span>
           </label>
 
           <button 
             onClick={handleComplete} 
             disabled={!confirmed || isSaving}
-            className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn btn-primary btn-lg w-full"
           >
             {isSaving ? 'Saving...' : 'Complete Setup'}
           </button>

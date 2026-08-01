@@ -107,27 +107,27 @@ const ShareFileDialog: React.FC<ShareFileDialogProps> = ({ file, keyPair, isOpen
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50/50">
-          <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-            <Share2 className="w-5 h-5 text-blue-500" />
+    <div className="modal-overlay" style={{ zIndex: 100 }}>
+      <div className="modal-content max-w-md animate-scale-in">
+        <div className="flex justify-between items-center p-4" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface-elevated)' }}>
+          <h3 className="font-semibold text-text-primary flex items-center gap-2">
+            <Share2 className="w-5 h-5 text-primary-light" />
             Share File
           </h3>
-          <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-full text-gray-500 transition-colors">
+          <button onClick={onClose} className="p-1.5 hover:bg-primary/10 rounded-lg text-text-muted hover:text-text-primary transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6">
-          <p className="text-sm text-gray-600 mb-4">
-            Share <span className="font-medium text-gray-800">{file.name}</span> securely. The file will be encrypted using the recipient's public key.
+          <p className="text-sm text-text-secondary mb-4">
+            Share <span className="font-medium text-text-primary">{file.name}</span> securely. The file will be encrypted using the recipient&apos;s public key.
           </p>
 
           {!successLink ? (
             <form onSubmit={handleShare} className="flex flex-col gap-4">
               <div>
-                <label htmlFor="recipient" className="block text-xs font-medium text-gray-700 mb-1">
+                <label htmlFor="recipient" className="block text-xs font-medium text-text-secondary mb-1.5">
                   Recipient Username or Email
                 </label>
                 <input
@@ -136,18 +136,18 @@ const ShareFileDialog: React.FC<ShareFileDialogProps> = ({ file, keyPair, isOpen
                   value={recipient}
                   onChange={(e) => setRecipient(e.target.value)}
                   placeholder="e.g. alice@example.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+                  className="input-field"
                   disabled={isSharing}
                   autoComplete="off"
                 />
               </div>
 
-              {error && <p className="text-red-500 text-xs">{error}</p>}
+              {error && <p className="text-danger text-xs">{error}</p>}
 
               <button
                 type="submit"
                 disabled={isSharing || !recipient.trim()}
-                className="mt-2 w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2 px-4 rounded-lg transition-colors flex justify-center items-center gap-2"
+                className="btn btn-primary w-full mt-1"
               >
                 {isSharing ? (
                   <>
@@ -161,16 +161,16 @@ const ShareFileDialog: React.FC<ShareFileDialogProps> = ({ file, keyPair, isOpen
             </form>
           ) : (
             <div className="flex flex-col gap-4">
-              <div className="bg-green-50 border border-green-100 text-green-800 text-sm p-3 rounded-lg flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+              <div className="p-3 rounded-lg flex items-start gap-2" style={{ background: 'var(--success-bg)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                <Check className="w-5 h-5 text-success shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium">File shared successfully!</p>
-                  <p className="text-green-700/80 mt-1">This link will expire in 3 days.</p>
+                  <p className="font-medium text-success text-sm">File shared successfully!</p>
+                  <p className="text-success/70 text-xs mt-1">This link will expire in 3 days.</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-text-secondary mb-1.5">
                   Share Link
                 </label>
                 <div className="flex gap-2">
@@ -178,21 +178,21 @@ const ShareFileDialog: React.FC<ShareFileDialogProps> = ({ file, keyPair, isOpen
                     type="text"
                     readOnly
                     value={successLink}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none text-sm text-gray-600"
+                    className="input-field text-sm"
                   />
                   <button
                     onClick={copyToClipboard}
-                    className="flex items-center justify-center px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg transition-colors text-gray-700"
+                    className="btn btn-secondary btn-sm shrink-0"
                     title="Copy to clipboard"
                   >
-                    {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                    {copied ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
               <button
                 onClick={onClose}
-                className="mt-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
+                className="btn btn-secondary w-full mt-1"
               >
                 Close
               </button>

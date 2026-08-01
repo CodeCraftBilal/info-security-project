@@ -14,11 +14,11 @@ export default function DashboardLayout({
     <KeyProvider>
       <NotificationProvider>
         <KeyGuard>
-          <div className="bg-[#0b1338] h-screen p-2 flex flex-col">
+          <div className="h-screen flex flex-col p-2 gap-2" style={{ background: 'var(--background)' }}>
             <Header />
-            <div className="bottom flex flex-1 min-h-0 relative overflow-hidden">
+            <div className="flex flex-1 min-h-0 gap-2 relative overflow-hidden">
               <Sidebar />
-              <div className="right flex flex-col flex-1 items-center gap-2 bg-blue-200 h-full rounded-2xl px-2 overflow-y-auto">
+              <div className="flex flex-col flex-1 items-center gap-2 h-full rounded-2xl px-2 overflow-y-auto" style={{ background: 'var(--surface)' }}>
                 {children}
               </div>
             </div>

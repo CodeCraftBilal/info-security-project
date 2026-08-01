@@ -1,6 +1,9 @@
 import { signIn } from "@/auth";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import Image from "next/image";
+import Link from "next/link";
+import { Shield } from "lucide-react";
 
 export default async function SignInPage({
   searchParams,
@@ -16,18 +19,32 @@ export default async function SignInPage({
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        <div>
-          <h2 className="mt-2 text-center text-3xl font-extrabold tracking-tight text-gray-900">
-            Sign in to your account
+    <div className="flex min-h-screen items-center justify-center p-4 relative" style={{ background: 'var(--gradient-hero)' }}>
+      
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+      </div>
+
+      <div className="w-full max-w-md space-y-8 glass p-8 sm:p-10 rounded-2xl shadow-2xl relative z-10 animate-fade-in-up" style={{ border: '1px solid var(--border)' }}>
+        
+        <div className="flex flex-col items-center">
+          <Link href="/" className="flex items-center gap-2 mb-6 group">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105" style={{ background: 'var(--surface-elevated)' }}>
+              <Image src="/logo.svg" alt="SecureShare Logo" width={40} height={40} />
+            </div>
+          </Link>
+          <h2 className="mt-2 text-center text-3xl font-extrabold tracking-tight text-text-primary">
+            Welcome Back
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Welcome back to SecureShare
+          <p className="mt-2 text-center text-sm text-text-secondary">
+            Sign in to access your encrypted files
           </p>
         </div>
-        <div className="mt-8 space-y-6">
-          <div className="space-y-4">
+
+        <div className="mt-8 space-y-4">
+          <div className="space-y-3">
             <form
               action={async () => {
                 "use server";
@@ -36,12 +53,13 @@ export default async function SignInPage({
             >
               <button
                 type="submit"
-                className="group relative flex w-full justify-center items-center rounded-md bg-[#24292F] px-4 py-3 text-sm font-semibold text-white hover:bg-[#24292F]/90 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[#24292F] transition-all"
+                className="group relative flex w-full justify-center items-center rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all duration-200"
+                style={{ background: '#24292F' }}
               >
                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
                 </svg>
-                Sign in with GitHub
+                Continue with GitHub
               </button>
             </form>
             
@@ -53,7 +71,8 @@ export default async function SignInPage({
             >
               <button
                 type="submit"
-                className="group relative flex w-full justify-center items-center rounded-md border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-gray-900 transition-all shadow-sm"
+                className="group relative flex w-full justify-center items-center rounded-xl border px-4 py-3 text-sm font-semibold transition-all duration-200"
+                style={{ background: 'var(--surface-elevated)', color: 'var(--text-primary)', borderColor: 'var(--border)' }}
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -62,17 +81,17 @@ export default async function SignInPage({
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                   <path d="M1 1h22v22H1z" fill="none" />
                 </svg>
-                Sign in with Google
+                Continue with Google
               </button>
             </form>
           </div>
           
-          <div className="relative">
+          <div className="relative py-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+              <div className="w-full border-t" style={{ borderColor: 'var(--border)' }} />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-4 text-gray-500">Or continue with</span>
+              <span className="px-4 text-text-muted text-xs uppercase tracking-wider" style={{ background: 'var(--surface)' }}>Or continue with email</span>
             </div>
           </div>
           
@@ -85,7 +104,7 @@ export default async function SignInPage({
           >
             <input type="hidden" name="redirectTo" value={callbackUrl ?? "/dashboard"} />
             <div>
-              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900 mb-2">
+              <label htmlFor="email" className="sr-only">
                 Email address
               </label>
               <input
@@ -94,17 +113,24 @@ export default async function SignInPage({
                 type="email"
                 autoComplete="email"
                 required
-                className="block w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black sm:text-sm sm:leading-6 px-3 transition-all"
+                className="input-field"
                 placeholder="you@example.com"
               />
             </div>
             <button
               type="submit"
-              className="group relative flex w-full justify-center rounded-md bg-black px-4 py-3 text-sm font-semibold text-white hover:bg-gray-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black transition-all shadow-sm"
+              className="btn btn-primary w-full"
             >
-              Sign in with Email
+              Send Magic Link
             </button>
           </form>
+          
+          <div className="pt-6 mt-6 text-center border-t" style={{ borderColor: 'var(--border)' }}>
+             <p className="text-xs text-text-muted flex items-center justify-center gap-1">
+                <Shield className="w-3.5 h-3.5" />
+                Protected by end-to-end encryption
+             </p>
+          </div>
         </div>
       </div>
     </div>

@@ -98,41 +98,42 @@ const FileItem: React.FC<FileItemProps> = ({ file, keyPair, onRefresh }) => {
         onDelete={handleDelete}
       />
       
-      <div className="flex flex-col bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition-shadow duration-200 h-full w-full">
+      <div className="card-interactive flex flex-col h-full w-full">
         {/* Thumbnail Area */}
         <div 
-          className={`relative w-full h-32 sm:h-48 bg-gray-50 flex items-center justify-center overflow-hidden ${file.type.startsWith('image/') ? 'cursor-pointer hover:opacity-90' : ''}`}
+          className={`relative w-full h-32 sm:h-48 flex items-center justify-center overflow-hidden ${file.type.startsWith('image/') ? 'cursor-pointer' : ''}`}
+          style={{ background: 'var(--surface-elevated)' }}
           onClick={() => { if (file.type.startsWith('image/')) setIsPreviewOpen(true); }}
         >
           {file.type.startsWith('image/') ? (
              thumbnailUrl ? (
-               <img src={thumbnailUrl} alt={file.name} className="object-cover w-full h-full" />
+               <img src={thumbnailUrl} alt={file.name} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105" />
              ) : thumbnailError ? (
-               <div className="text-red-500 text-xs text-center p-2 flex flex-col items-center">
-                 <File className="w-6 h-6 sm:w-8 sm:h-8 mb-1 opacity-50 text-red-400" />
+               <div className="text-danger text-xs text-center p-2 flex flex-col items-center">
+                 <File className="w-6 h-6 sm:w-8 sm:h-8 mb-1 opacity-50 text-danger-light" />
                  <span className="max-w-[120px] leading-tight">{thumbnailError}</span>
                </div>
              ) : isDecrypting ? (
                <div className="flex flex-col items-center justify-center">
                  <LoadingSpinner size="small" color="primary" />
-                 <span className="text-blue-400 text-[10px] sm:text-xs mt-2 animate-pulse font-medium">Decrypting...</span>
+                 <span className="text-primary-light text-[10px] sm:text-xs mt-2 animate-pulse font-medium">Decrypting...</span>
                </div>
              ) : (
-               <ImageIcon className="w-8 h-8 sm:w-12 sm:h-12 text-gray-300" />
+               <ImageIcon className="w-8 h-8 sm:w-12 sm:h-12 text-text-muted" />
              )
           ) : (
-             <FileText className="w-10 h-10 sm:w-16 sm:h-16 text-gray-300" />
+             <FileText className="w-10 h-10 sm:w-16 sm:h-16 text-text-muted" />
           )}
         </div>
 
         {/* Details Area */}
         <div className={`flex flex-col p-2 sm:p-3 ${!showDetails ? 'hidden md:flex' : 'flex'}`}>
-           <div className="font-semibold text-xs sm:text-sm truncate" title={file.name}>{file.name}</div>
-           <div className="flex justify-between items-center text-[10px] sm:text-xs text-gray-500 mt-1 sm:mt-2">
+           <div className="font-semibold text-xs sm:text-sm text-text-primary truncate" title={file.name}>{file.name}</div>
+           <div className="flex justify-between items-center text-[10px] sm:text-xs text-text-muted mt-1 sm:mt-2">
               <span className="truncate max-w-[60%]">{file.type}</span>
               <span>{file.size}</span>
            </div>
-           <div className="text-[8px] sm:text-[10px] text-gray-400 mt-1">{file.uploadedAt}</div>
+           <div className="text-[8px] sm:text-[10px] text-text-muted mt-1">{file.uploadedAt}</div>
         </div>
       </div>
 

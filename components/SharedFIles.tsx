@@ -1,11 +1,12 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CryptoService } from '@/lib/crypto';
 import { getKeyPairFromIndexedDB } from '@/lib/keyManagement';
 import { useSession } from 'next-auth/react';
 import SharedFileItem, { SharedFile } from './dashboard/SharedFileItem';
 import ContentLoader from './Loader/ContentLoader';
+import EmptyFiles from './dashboard/EmptyFiles';
 
 interface User {
   userId: string;
@@ -209,30 +210,37 @@ const SharedWithMe = () => {
     }
   };
 
+  const hasNoFiles = !loading && filteredFiles.length === 0;
+
   return (
-    <div className='w-full h-full px-4 flex flex-col gap-2'>
-      <div className="search flex items-center gap-2 rounded-lg mt-4 p-1 bg-blue-300 mx-2 w-[90%]">
+    <div className='w-full h-full px-4 flex flex-col gap-3 relative'>
+      {/* Search Bar */}
+      <div className="flex items-center gap-2 rounded-xl mt-4 px-4 py-2.5 mx-1 w-full max-w-2xl" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+        <Search className="text-text-muted h-5 w-5 shrink-0" />
         <input 
           onChange={handleChangeSearch} 
           value={search}
           type="search" 
-          placeholder="Search shared files..."
-          className='w-[calc(100%-60px)] py-1 px-2 text-black out text-xl focus:outline-hidden bg-transparent' 
+          placeholder="Search files shared with you..."
+          className='flex-1 py-0.5 text-text-primary text-base focus:outline-none bg-transparent placeholder:text-text-muted' 
         />
-        <button className="p-1">
-          <Search className="text-black h-8 w-8" />
-        </button>
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto">
-        <div className="filescontainer grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-6 p-2 text-blue-600">
-          {loading ? (
+        <div className="filescontainer grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-5 p-2">
+          {loading && (
             <div className='col-span-full text-center'>
               <ContentLoader type='grid'/>
             </div>
-          ) : !loading && filteredFiles.length === 0 ? (
-            <div className='col-span-full text-center'>No shared files found</div>
-          ) : null}
+          )}
+          
+          {hasNoFiles && (
+            <EmptyFiles 
+              title="No Shared Files" 
+              message="No one has shared any files with you yet. When they do, those files will appear here securely encrypted."
+              onUploadClick={() => { window.dispatchEvent(new CustomEvent('openUploadModal')); }}
+            />
+          )}
 
           {paginatedFiles.map((file) => (
             <SharedFileItem 
@@ -248,23 +256,25 @@ const SharedWithMe = () => {
       </div>
 
       {!loading && totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 py-4 mt-auto">
+        <div className="flex justify-center items-center gap-3 py-4 mt-auto">
           <button 
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(prev => prev - 1)}
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+            className="btn btn-secondary btn-sm disabled:opacity-40"
           >
+            <ChevronLeft className="w-4 h-4" />
             Previous
           </button>
-          <span className="text-gray-700">
+          <span className="text-text-secondary text-sm font-medium px-3">
             Page {currentPage} of {totalPages}
           </span>
           <button 
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(prev => prev + 1)}
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+            className="btn btn-secondary btn-sm disabled:opacity-40"
           >
             Next
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       )}

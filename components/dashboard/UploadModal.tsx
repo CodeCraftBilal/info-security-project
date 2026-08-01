@@ -196,14 +196,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const pendingCount = selectedFiles.filter(f => f.status === 'pending').length;
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-[#26305aec] border border-blue-400/20 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="modal-overlay">
+      <div className="modal-content max-w-2xl">
         
         {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b border-blue-400/20">
-          <h2 className="text-white text-xl font-bold">Upload Files</h2>
-          <button onClick={onClose} disabled={isUploading} className="text-gray-400 hover:text-white disabled:opacity-50">
-            <X size={24} />
+        <div className="flex justify-between items-center p-4" style={{ borderBottom: '1px solid var(--border)' }}>
+          <h2 className="text-text-primary text-xl font-bold">Upload Files</h2>
+          <button onClick={onClose} disabled={isUploading} className="text-text-muted hover:text-text-primary disabled:opacity-50 transition-colors p-1 rounded-lg hover:bg-primary/10">
+            <X size={20} />
           </button>
         </div>
 
@@ -214,11 +214,12 @@ const UploadModal: React.FC<UploadModalProps> = ({
           {!isUploading && (
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-blue-400/50 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-400/10 transition-colors"
+              className="rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 hover:border-primary/50"
+              style={{ border: '2px dashed var(--border-strong)', background: 'var(--surface-card)' }}
             >
-              <UploadCloud size={48} className="text-blue-400 mb-2" />
-              <p className="text-white font-medium mb-1">Click or drag files here</p>
-              <p className="text-gray-400 text-sm">Supports PDF, DOC, JPG, PNG, MP4 (Max 10MB)</p>
+              <UploadCloud size={48} className="text-primary-light mb-3" />
+              <p className="text-text-primary font-medium mb-1">Click or drag files here</p>
+              <p className="text-text-muted text-sm">Supports PDF, DOC, JPG, PNG, MP4 (Max 10MB)</p>
               <input 
                 type="file" 
                 ref={fileInputRef}
@@ -234,43 +235,43 @@ const UploadModal: React.FC<UploadModalProps> = ({
           {selectedFiles.length > 0 && (
             <div className="flex flex-col gap-2">
               {selectedFiles.map(f => (
-                <div key={f.id} className="bg-blue-900/40 border border-blue-400/20 rounded-lg p-3 flex items-center gap-3 relative overflow-hidden">
+                <div key={f.id} className="glass rounded-lg p-3 flex items-center gap-3 relative overflow-hidden">
                   
                   {/* Progress bar background */}
                   {f.status === 'uploading' && (
                     <div 
-                      className="absolute left-0 top-0 bottom-0 bg-blue-500/20 transition-all duration-300 z-0" 
+                      className="absolute left-0 top-0 bottom-0 bg-primary/15 transition-all duration-300 z-0" 
                       style={{ width: `${f.progress}%` }} 
                     />
                   )}
 
-                  <div className="z-10 flex items-center justify-center w-10 h-10 bg-blue-800/50 rounded-lg shrink-0 overflow-hidden">
+                  <div className="z-10 flex items-center justify-center w-10 h-10 rounded-lg shrink-0 overflow-hidden" style={{ background: 'var(--surface-elevated)' }}>
                     {f.previewUrl ? (
                       <img src={f.previewUrl} alt="preview" className="w-full h-full object-cover" />
                     ) : f.file.type.startsWith('image/') ? (
-                      <ImageIcon className="text-blue-300" size={20} />
+                      <ImageIcon className="text-primary-light" size={20} />
                     ) : (
-                      <FileIcon className="text-blue-300" size={20} />
+                      <FileIcon className="text-primary-light" size={20} />
                     )}
                   </div>
                   
                   <div className="z-10 flex-1 min-w-0">
-                    <div className="text-sm font-medium text-white truncate">{f.file.name}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">
+                    <div className="text-sm font-medium text-text-primary truncate">{f.file.name}</div>
+                    <div className="text-xs text-text-muted mt-0.5">
                       {(f.file.size / (1024 * 1024)).toFixed(2)} MB
-                      {f.status === 'error' && <span className="text-red-400 ml-2">{f.errorMessage}</span>}
-                      {f.status === 'uploading' && <span className="text-blue-300 ml-2">{f.progress}% uploaded</span>}
-                      {f.status === 'completed' && <span className="text-green-400 ml-2">Completed</span>}
+                      {f.status === 'error' && <span className="text-danger ml-2">{f.errorMessage}</span>}
+                      {f.status === 'uploading' && <span className="text-primary-light ml-2">{f.progress}% uploaded</span>}
+                      {f.status === 'completed' && <span className="text-success ml-2">Completed</span>}
                     </div>
                   </div>
 
                   <div className="z-10 shrink-0">
                     {f.status === 'completed' ? (
-                      <CheckCircle className="text-green-500" size={20} />
+                      <CheckCircle className="text-success" size={20} />
                     ) : f.status === 'error' ? (
-                      <XCircle className="text-red-500" size={20} />
+                      <XCircle className="text-danger" size={20} />
                     ) : !isUploading ? (
-                      <button onClick={() => removeFile(f.id)} className="text-gray-400 hover:text-red-400 p-1">
+                      <button onClick={() => removeFile(f.id)} className="text-text-muted hover:text-danger p-1 transition-colors">
                         <X size={18} />
                       </button>
                     ) : null}
@@ -282,18 +283,18 @@ const UploadModal: React.FC<UploadModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-blue-400/20 flex justify-end gap-3 bg-[#1e2646ec] rounded-b-2xl">
+        <div className="p-4 flex justify-end gap-3 rounded-b-2xl" style={{ borderTop: '1px solid var(--border)', background: 'var(--surface-elevated)' }}>
           <button 
             onClick={onClose} 
             disabled={isUploading}
-            className="px-4 py-2 text-white font-medium hover:bg-white/5 rounded-xl transition-colors disabled:opacity-50"
+            className="btn btn-ghost disabled:opacity-50"
           >
             Cancel
           </button>
           <button 
             onClick={handleUploadClick}
             disabled={isUploading || pendingCount === 0 || !keyPair?.publicKey}
-            className="bg-blue-400 hover:bg-blue-500 text-white px-6 py-2 rounded-xl font-bold transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-blue-500/20"
+            className="btn btn-primary"
           >
             {isUploading ? 'Uploading...' : `Upload ${pendingCount > 0 ? pendingCount : ''} Files`}
           </button>

@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useRef } from 'react';
-import { Bell, Check, X } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { useNotification } from '@/context/NotificationContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
 
@@ -28,24 +28,24 @@ const NotificationDropdown = () => {
     <div className="relative flex items-center" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className="relative p-2 text-white hover:bg-white/10 rounded-full transition-colors"
+        className="relative p-2 text-text-secondary hover:text-text-primary rounded-lg hover:bg-primary/10 transition-colors"
       >
-        <Bell size={24} />
+        <Bell size={20} />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+          <span className="absolute top-0.5 right-0.5 bg-danger text-white text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute top-[50px] right-0 w-80 bg-[#26305aec] border border-blue-400/20 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[400px]">
-          <div className="p-3 border-b border-blue-400/20 flex justify-between items-center bg-[#1e2646ec]">
-            <h3 className="text-white font-semibold">Notifications</h3>
+        <div className="absolute top-[48px] right-0 w-80 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col max-h-[400px] animate-fade-in-down" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="p-3 flex justify-between items-center" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface-elevated)' }}>
+            <h3 className="text-text-primary font-semibold text-sm">Notifications</h3>
             {notifications.length > 0 && (
               <button 
                 onClick={handleMarkAllRead}
-                className="text-xs text-blue-300 hover:text-white transition-colors"
+                className="text-xs text-primary-light hover:text-primary transition-colors"
               >
                 Mark all as read
               </button>
@@ -54,7 +54,7 @@ const NotificationDropdown = () => {
           
           <div className="flex-1 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="p-6 text-center text-gray-400 text-sm">
+              <div className="p-8 text-center text-text-muted text-sm">
                 No new notifications
               </div>
             ) : (
@@ -63,9 +63,10 @@ const NotificationDropdown = () => {
                   <div 
                     key={notification._id} 
                     onClick={() => handleNotificationClick(notification._id)}
-                    className="p-3 border-b border-blue-400/10 hover:bg-blue-900/40 cursor-pointer transition-colors flex gap-3 items-start"
+                    className="p-3 hover:bg-primary/5 cursor-pointer transition-colors flex gap-3 items-start"
+                    style={{ borderBottom: '1px solid var(--border-subtle)' }}
                   >
-                    <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden bg-blue-800/50 flex items-center justify-center">
+                    <div className="shrink-0 w-9 h-9 rounded-full overflow-hidden flex items-center justify-center ring-1 ring-border" style={{ background: 'var(--surface-elevated)' }}>
                       <img 
                         src={notification.senderProfilePic || '/colImg.gif'} 
                         alt="Profile" 
@@ -74,11 +75,11 @@ const NotificationDropdown = () => {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white break-words">
-                        <span className="font-semibold text-blue-300">{notification.senderUsername}</span>{' '}
+                      <p className="text-sm text-text-primary break-words leading-snug">
+                        <span className="font-semibold text-primary-light">{notification.senderUsername}</span>{' '}
                         {notification.message.replace(`Shared a new file with you: `, 'shared a file: ')}
                       </p>
-                      <span className="text-[10px] text-gray-400 mt-1 block">
+                      <span className="text-[10px] text-text-muted mt-1 block">
                         {new Date(notification.createdAt).toLocaleDateString()} {new Date(notification.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                       </span>
                     </div>

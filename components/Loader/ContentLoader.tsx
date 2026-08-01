@@ -13,9 +13,9 @@ const ContentLoader: React.FC<ContentLoaderProps> = ({
   columns = 3
 }) => {
   const renderGridLoader = () => (
-    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-${columns} gap-3 md:gap-6`}>
+    <div className={`grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3 sm:gap-5 p-2`}>
       {[...Array(count)].map((_, index) => (
-        <SkeletonCard key={index} variant="product" className='' />
+        <SkeletonCard key={index} variant="simple" />
       ))}
     </div>
   );
@@ -25,29 +25,19 @@ const ContentLoader: React.FC<ContentLoaderProps> = ({
       {[...Array(count)].map((_, index) => (
         <div
           key={index}
-          className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-green-100 animate-pulse"
+          className="rounded-xl p-4 shadow-sm animate-pulse flex items-start space-x-4"
+          style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
         >
-          <div className="flex items-start md:space-x-4">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-200 rounded-lg flex-shrink-0"></div>
-            <div className="hidden md:block flex-1 space-y-3">
-              <div className="w-3/4 h-5 bg-green-200 rounded"></div>
-              <div className="w-1/2 h-4 bg-green-100 rounded"></div>
-              <div className="w-32 h-4 bg-green-50 rounded"></div>
-              <div className="flex space-x-2">
-                <div className="w-16 h-6 bg-green-200 rounded-full"></div>
-                <div className="w-16 h-6 bg-green-100 rounded-full"></div>
-              </div>
+          <div className="w-12 h-12 rounded-lg shrink-0" style={{ background: 'var(--surface)' }}></div>
+          <div className="flex-1 space-y-3 py-1">
+            <div className="w-3/4 h-4 rounded" style={{ background: 'var(--surface)' }}></div>
+            <div className="w-1/2 h-3 rounded" style={{ background: 'var(--surface)' }}></div>
+            <div className="flex space-x-2">
+              <div className="w-16 h-5 rounded-full" style={{ background: 'var(--surface)' }}></div>
+              <div className="w-16 h-5 rounded-full" style={{ background: 'var(--surface)' }}></div>
             </div>
           </div>
         </div>
-      ))}
-    </div>
-  );
-
-  const renderCardsLoader = () => (
-    <div className="space-y-6">
-      {[...Array(count)].map((_, index) => (
-        <SkeletonCard key={index} variant="detailed" />
       ))}
     </div>
   );
@@ -56,7 +46,6 @@ const ContentLoader: React.FC<ContentLoaderProps> = ({
     <div className="w-full">
       {type === 'grid' && renderGridLoader()}
       {type === 'list' && renderListLoader()}
-      {type === 'cards' && renderCardsLoader()}
     </div>
   );
 };

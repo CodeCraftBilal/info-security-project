@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { useKeyPair } from '@/hooks/useKeyPair';
 import { deleteKeyPairFromIndexedDB } from '@/lib/keyManagement';
-import { Menu } from 'lucide-react';
+import { Menu, Upload, Share2, LogOut, X } from 'lucide-react';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import Image from 'next/image';
 import NotificationDropdown from './NotificationDropdown';
@@ -41,64 +41,73 @@ const Header: React.FC = () => {
   }
 
   return (
-    <div className="topbar p-2 flex items-center justify-between h-[60px] relative">
-      <Link className='logo gap-1 flex items-center cursor-pointer' href={'/'}>
-        <Image src="logo.svg" alt="logo" width={48} height={48} />
-        <span className="text-white font-bold text-2xl hidden md:block">SecureShare</span>
+    <div className="glass rounded-xl px-4 flex items-center justify-between h-[60px] relative">
+      <Link className='flex items-center gap-2 cursor-pointer group' href={'/'}>
+        <Image src="/logo.svg" alt="logo" width={36} height={36} className="transition-transform group-hover:scale-105" />
+        <span className="text-text-primary font-bold text-xl hidden md:block tracking-tight">
+          Secure<span className="gradient-text">Share</span>
+        </span>
       </Link>
 
-      <div className="hidden md:flex actionbtns gap-3 items-center">
+      <div className="hidden md:flex items-center gap-2">
         <NotificationDropdown />
         <button 
           onClick={handleUploadClick} 
           disabled={!keyPair || isInitializing} 
-          className="bg-blue-300 disabled:opacity-50 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold h-fit"
+          className="btn btn-primary btn-sm"
         >
-          {(!keyPair || isInitializing) ? 'Loading...' : 'Upload File'}
+          <Upload className="w-4 h-4" />
+          {(!keyPair || isInitializing) ? 'Loading...' : 'Upload'}
         </button>
         <button 
           onClick={handleShare} 
-          className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold h-fit"
+          className="btn btn-secondary btn-sm"
         >
-          Share File
+          <Share2 className="w-4 h-4" />
+          Share
         </button>
         <button
-          className='bg-blue-300 p-2 rounded-xl text-black font-bold hover:bg-blue-400 hover:cursor-pointer h-fit'
+          className='btn btn-ghost btn-sm text-text-secondary hover:text-danger'
           onClick={logout}
         >
+          <LogOut className="w-4 h-4" />
           Logout
         </button>
       </div>
 
       {/* Mobile Menu Toggle */}
-      <div className="md:hidden flex items-center" ref={menuRef}>
+      <div className="md:hidden flex items-center gap-2" ref={menuRef}>
+        <NotificationDropdown />
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="text-white p-2"
+          className="p-2 text-text-secondary hover:text-text-primary rounded-lg hover:bg-primary/10 transition-colors"
         >
-          <Menu size={28} />
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
         {/* Mobile Dropdown Menu */}
         {isMenuOpen && (
-          <div className="absolute right-2 top-[60px] bg-[#26305aec] p-4 rounded-xl shadow-xl flex flex-col gap-3 z-50 border border-blue-400/20">
+          <div className="absolute right-2 top-[60px] glass-card p-3 rounded-xl shadow-xl flex flex-col gap-2 z-50 min-w-[180px] animate-fade-in-down">
             <button 
               onClick={handleUploadClick} 
               disabled={!keyPair || isInitializing} 
-              className="bg-blue-300 disabled:opacity-50 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold w-full"
+              className="btn btn-primary btn-sm w-full"
             >
-              {(!keyPair || isInitializing) ? 'Loading...' : 'Upload File'}
+              <Upload className="w-4 h-4" />
+              {(!keyPair || isInitializing) ? 'Loading...' : 'Upload'}
             </button>
             <button 
               onClick={handleShare} 
-              className="bg-blue-300 cursor-pointer hover:bg-blue-400 transition-all rounded-xl p-2 text-black font-bold w-full"
+              className="btn btn-secondary btn-sm w-full"
             >
-              Share File
+              <Share2 className="w-4 h-4" />
+              Share
             </button>
             <button
-              className='bg-blue-300 p-2 rounded-xl text-black font-bold hover:bg-blue-400 hover:cursor-pointer w-full'
+              className='btn btn-ghost btn-sm w-full text-danger'
               onClick={logout}
             >
+              <LogOut className="w-4 h-4" />
               Logout
             </button>
           </div>

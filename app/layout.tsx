@@ -1,24 +1,62 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "SecureShare - secure your files",
-  description: "A project for uploading files with with securty and end to end encryption for file sharing",
+  title: {
+    default: "SecureShare — End-to-End Encrypted File Sharing",
+    template: "%s | SecureShare",
+  },
+  description:
+    "Share files with military-grade end-to-end encryption. SecureShare uses AES-256-GCM and RSA-OAEP to protect your data — only you and your recipient can access the files.",
+  keywords: [
+    "secure file sharing",
+    "end-to-end encryption",
+    "encrypted file transfer",
+    "AES-256",
+    "RSA encryption",
+    "zero-knowledge",
+    "privacy",
+    "SecureShare",
+  ],
+  authors: [{ name: "Bilal Khan", url: "https://github.com/CodeCraftBilal" }],
+  creator: "Bilal Khan",
+  metadataBase: new URL("https://secureshare.bilalkhan.online"),
+  openGraph: {
+    title: "SecureShare — End-to-End Encrypted File Sharing",
+    description:
+      "Military-grade encryption for your files. Share with confidence using AES-256-GCM and RSA-OAEP.",
+    url: "https://secureshare.bilalkhan.online",
+    siteName: "SecureShare",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SecureShare — End-to-End Encrypted File Sharing",
+    description:
+      "Military-grade encryption for your files. Share with confidence.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: "/logo.svg",
-  }
+  },
 };
 
 export default function RootLayout({
@@ -27,9 +65,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <SessionProvider>
           {children}

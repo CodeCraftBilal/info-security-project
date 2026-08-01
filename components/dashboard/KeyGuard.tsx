@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useKeyPair } from '@/hooks/useKeyPair';
 import { usePathname, useRouter } from 'next/navigation';
+import LoadingSpinner from '../Loader/LoadingSpinner';
 
 export default function KeyGuard({ children }: { children: React.ReactNode }) {
   const { needsOnboarding, needsRecovery, isInitializing } = useKeyPair();
@@ -21,7 +22,12 @@ export default function KeyGuard({ children }: { children: React.ReactNode }) {
   }, [needsOnboarding, needsRecovery, isInitializing, pathname, router]);
 
   if (isInitializing) {
-    return <div className="flex items-center justify-center h-full w-full text-blue-900 font-bold">Loading keys...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-full w-full gap-3">
+        <LoadingSpinner size="large" color="primary" />
+        <span className="text-text-secondary font-medium text-sm animate-pulse">Loading encryption keys...</span>
+      </div>
+    );
   }
 
   // Prevent rendering children if they are about to be redirected

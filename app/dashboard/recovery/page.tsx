@@ -109,27 +109,27 @@ export default function RecoveryPage() {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-xl">
+    <div className="w-full max-w-3xl mx-auto mt-8 p-6 sm:p-8 rounded-2xl animate-fade-in-up" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Lock className="w-8 h-8 text-blue-600" />
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(99, 102, 241, 0.15)' }}>
+          <Lock className="w-8 h-8 text-primary-light" />
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">Unlock Your Files</h1>
-        <p className="text-gray-500 mt-2">Enter your 12-word recovery phrase to restore access</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">Unlock Your Files</h1>
+        <p className="text-text-muted mt-2 text-sm">Enter your 12-word recovery phrase to restore access</p>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg flex items-center gap-3 mb-6">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          <p className="text-sm font-medium">{error}</p>
+        <div className="p-4 rounded-xl flex items-center gap-3 mb-6" style={{ background: 'var(--danger-bg)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+          <AlertCircle className="w-5 h-5 flex-shrink-0 text-danger" />
+          <p className="text-sm font-medium text-danger">{error}</p>
         </div>
       )}
 
       <form onSubmit={handleRecover}>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
           {words.map((word, index) => (
             <div key={index} className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-mono select-none">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm font-mono select-none">
                 {index + 1}.
               </span>
               <input
@@ -137,7 +137,7 @@ export default function RecoveryPage() {
                 type="text"
                 value={word}
                 onChange={(e) => handleInputChange(index, e.target.value)}
-                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-mono text-gray-800"
+                className="input-field pl-9 font-mono"
                 placeholder="word"
                 required
                 autoComplete="off"
@@ -149,7 +149,7 @@ export default function RecoveryPage() {
         <button
           type="submit"
           disabled={isRecovering}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn btn-primary btn-lg w-full"
         >
           {isRecovering ? 'Recovering Keys...' : 'Restore Access'}
           {!isRecovering && <ArrowRight className="w-5 h-5" />}
