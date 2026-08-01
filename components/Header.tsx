@@ -10,6 +10,7 @@ const Header = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const navLinks = [
+        { label: 'Home', href: '/' },
         { label: 'About', href: '/about' },
         { label: 'Security', href: '/security' },
         { label: 'How It Works', href: '/how-it-works' },

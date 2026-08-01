@@ -26,18 +26,6 @@ const Features = (): React.JSX.Element => {
         icon: ShieldCheck,
         color: "success",
       },
-      {
-        title: "Activity Logs",
-        description: "Comprehensive audit trails of all file access and sharing activities.",
-        icon: FileText,
-        color: "info",
-      },
-      {
-        title: "Role-Based Access",
-        description: "Granular permissions for admins, users, and guests with different privilege levels.",
-        icon: Users,
-        color: "primary",
-      },
     ];
 
   const colorMap: Record<string, string> = {
@@ -63,7 +51,7 @@ const Features = (): React.JSX.Element => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-stagger">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-stagger">
         {features.map((feature, index) => {
           const IconComponent = feature.icon;
           const colors = colorMap[feature.color] || colorMap.primary;
